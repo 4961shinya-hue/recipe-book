@@ -165,17 +165,29 @@ details summary{cursor:pointer;color:var(--accent);font-size:14px;padding:8px 0}
     </div>
     <div class="panel">
       <h2>📤 Instagramのシェアボタンから保存</h2>
-      <p class="meta">最初に1回だけ、ショートカット「レシピ帳に保存」をiPhoneに追加します。</p>
-      <a href="レシピ帳に保存.shortcut"><button class="primary bigBtn" style="margin-top:0">ショートカットを追加する</button></a>
-      <p class="meta">開いたら「ショートカットを追加」を押してください。</p>
-      <h3 class="sec" style="margin-top:12px">使い方</h3>
+      <p class="meta">最初に1回だけ、iPhoneの「ショートカット」アプリで「レシピ帳に保存」を作ります（1分ほど）。</p>
+      <h3 class="sec" style="margin-top:8px">① ショートカットを作る</h3>
       <ol>
-        <li>Instagramでキャプションを<b>長押し→コピー</b>（材料・作り方も一緒に取り込めます）</li>
-        <li>投稿の<b>紙飛行機</b> → 下のアイコンを右へスワイプして「<b>共有</b>」（□↑）</li>
-        <li>開いた画面を<b>下までスクロール</b>し、文字のリストの中の「<b>レシピ帳に保存</b>」をタップ<br><span class="meta">無いときは、リスト最下部の「アクションを編集…」で ＋ を押して追加。それでも無いときは、ショートカットアプリで「レシピ帳に保存」の ⓘ →「共有シートに表示」をオン</span></li>
-        <li>レシピ帳が開いて自動で読み取るので、確認して「保存」</li>
+        <li>下のボタンで、URLの文字をコピー<br>
+          <span class="code" id="shareBase">https://4961shinya-hue.github.io/recipe-book/?url=</span><br>
+          <button id="copyShareBase" style="margin-top:6px">📋 この文字をコピー</button></li>
+        <li>「<b>ショートカット</b>」アプリ → 右上の <b>＋</b></li>
+        <li>一番上の名前をタップ →「<b>名称変更</b>」→「<b>レシピ帳に保存</b>」</li>
+        <li>名前の横の <b>v</b>（または下の ⓘ）→「<b>詳細</b>」→「<b>共有シートに表示</b>」をオン →「完了」</li>
+        <li>下の「アクションを検索」で「<b>URLを開く</b>」を探して追加</li>
+        <li>「URLを開く」の青い「URL」部分をタップ → <b>長押し→ペースト</b>（コピーした文字）</li>
+        <li>続けて、キーボードの上に出る「<b>ショートカットの入力</b>」をタップして、文字の最後に付ける<br>
+          <span class="meta">完成形：「…/recipe-book/?url=<b>［ショートカットの入力］</b>を開く」</span></li>
+        <li>右上の「完了」</li>
       </ol>
-      <p class="meta">初回だけ「クリップボードへのアクセスを許可しますか？」と出たら「許可」を選んでください。YouTubeの「共有」からも同じように使えます。</p>
+      <h3 class="sec">② 使い方</h3>
+      <ol>
+        <li>Instagramでキャプションを<b>長押し→コピー</b></li>
+        <li>投稿の<b>紙飛行機</b> → 下のアイコンを右へスワイプして「<b>共有</b>」（□↑）</li>
+        <li>開いた画面を<b>下までスクロール</b>し、文字のリストの中の「<b>レシピ帳に保存</b>」をタップ<br><span class="meta">無いときは、リスト最下部の「アクションを編集…」で ＋ を押して追加</span></li>
+        <li>レシピ帳が開いたら「<b>📋 貼り付けて読み取る</b>」→「ペースト」→ 確認して「保存」</li>
+      </ol>
+      <p class="meta">YouTubeの「共有」からも同じように使えます。</p>
     </div>
     <div class="panel">
       <h2>📥 手動で保存する</h2>
@@ -481,6 +493,10 @@ $("#parseBtn").onclick = async () => {
     : `<div class="note warn">材料・作り方の見出しが見つかりませんでした。下の欄に直接入力してください。</div>`;
   $("#editDlg").scrollTop = 0;
 };
+$("#copyShareBase").onclick = async () => {
+  try { await navigator.clipboard.writeText($("#shareBase").textContent); $("#copyShareBase").textContent = "コピーしました ✓"; }
+  catch { alert("コピーできませんでした。文字を長押ししてコピーしてください。"); }
+};
 $("#pasteParseBtn").onclick = async () => {
   let text = "";
   try { text = await navigator.clipboard.readText(); } catch {}
@@ -717,7 +733,7 @@ async function importUrl(raw, caption = "") {
       notes.push(caption ? "コピーされていた文章から材料・作り方の見出しが見つかりませんでした。キャプションを確認するか、手入力してください。"
         : info.platform === "youtube"
         ? "YouTubeの概要欄は自動で取れません。YouTubeアプリで概要欄の材料・作り方を<b>長押し→コピー</b>し、下の欄に<b>ペースト</b>して「読み取る」を押してください。"
-        : "投稿の説明文は自動で取れません。元のアプリでキャプションを<b>長押し→コピー</b>し、下の欄に<b>ペースト</b>して「読み取る」を押してください。");
+        : "元のアプリでキャプションを<b>長押し→コピー</b>して、下の「<b>📋 貼り付けて読み取る</b>」を押してください。");
       warn = true;
     } else notes.push("読み取りました。確認して右上の「保存」を押してください。");
     openEdit(info, notes.join("<br>"), warn);
