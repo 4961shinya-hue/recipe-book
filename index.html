@@ -285,7 +285,7 @@ details summary{cursor:pointer;color:var(--accent);font-size:14px;padding:8px 0}
 const $ = s => document.querySelector(s);
 const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const lines = s => (s || "").split("\n").map(x => x.trim()).filter(Boolean);
-const stripNum = s => s.replace(/^\s*(\d+[.)．、:]|[①-⑳]|step\s*\d+[.:]?)\s*/i, "");
+const stripNum = s => s.replace(/^\s*(\d+\s*[.)．、:：）]|\d+\uFE0F?\u20E3|[①-⑳❶-❿➀-➉⓵-⓾]|step\s*\d+[.:：]?|手順\s*\d+[.:：]?|\(\d+\)|（\d+）|\d+[\s　]+(?=\D))\s*/iu, "");
 const store = {get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }};
 const WD = "日月火水木金土";
@@ -371,14 +371,16 @@ function fetchInfo(url) {  // 外部への問い合わせはせず、URLから�
 const firstLine = t => (lines(t)[0] || "").replace(/#\S+/g, "").trim().slice(0, 60);
 
 /* ---------- 材料・作り方の読み取り（端末内で処理） ---------- */
-const PRE = "^[\\s【\\[■●◆▼<＜《〈◎☆★♦・]*";
-const QTY = /(\d|[０-９]|大さじ|小さじ|カップ|少々|適量|適宜|ひとつまみ|お好みで|g\b|ｇ|ml|mL|cc|個|本|枚|片|かけ|束|丁|合|切れ|房|玉|袋|缶|株)/;
-const ING_HEAD = new RegExp(PRE + "(材料|ingredients?)", "i");
-const STEP_HEAD = new RegExp(PRE + "(作り方|手順|つくり方|how to|steps?|directions?|recipe)", "i");
-const END_HEAD = new RegExp(PRE + "(ポイント|コツ|point|memo|メモ|保存|tips|チャンネル|instagram|twitter|tiktok|お仕事|お問い合わせ|楽天|amazon|#)", "i");
-const STEP_NUM = /^\s*(\d+[.)．、:]|[①-⑳]|step\s*\d+|\(\d+\)|（\d+）)/i;
+// 見出しの前後に付く絵文字・記号（🥚材料🥚 ▶︎作り方 ＼材料／ ーーー手順ーーー など）は無視する
+const DECO = "[\\s\\p{P}\\p{S}\\p{Extended_Pictographic}\\uFE0E\\uFE0F\\u200D]*";
+const ING_HEAD = new RegExp("^" + DECO + "(材料|ざいりょう|ingredients?)(?![\\p{L}])", "iu");
+const STEP_HEAD = new RegExp("^" + DECO + "(作り方|つくり方|手順|調理方法|how\\s*to(\\s*make)?|steps?|directions?|method|recipe|レシピ)(?![\\p{L}\\p{N}])", "iu");
+const END_HEAD = new RegExp("^" + DECO + "(ポイント|コツ|point|memo|メモ|保存|tips|いいね|参考に|ぜひ|作ってみてね|作ってね|チャンネル|instagram|twitter|tiktok|youtube|お仕事|お問い合わせ|楽天|amazon|プロフィール|フォロー|#)", "iu");
+const STEP_NUM = /^\s*(\d+\s*[.)．、:：）]|\d+️?⃣|[①-⑳❶-❿➀-➉⓵-⓾]|step\s*\d+|手順\s*\d+|\(\d+\)|（\d+）)/iu;
+const QTY = /(\d|[０-９½¼¾⅓]|大さじ|小さじ|大匙|小匙|カップ|少々|適量|適宜|ひとつまみ|お好みで|好みで|g\b|ｇ|kg|ml|mL|cc|個|本|枚|片|かけ|束|丁|合|切れ|房|玉|袋|缶|株|尾|杯|パック|cup|tbsp|tsp|cloves?)/i;
 const SERV_ONLY = /^[（(【\[]?\s*\d+[〜~～-]?\d*\s*人(分|前)\s*[）)】\]]?$/;
-const bullet = s => s.replace(/^[・\-•*　 ]+/, "");
+const DECO_ONLY = new RegExp("^" + DECO + "$", "u");  // 「.」「ーーー」だけの区切り行
+const bullet = s => s.replace(/^[\s・\-•*▪▫◦○●◆◇■□▶▷►→✔✓☑…︎️\p{Extended_Pictographic}]+/u, "");
 
 function parseRecipe(text) {
   text = text || "";
@@ -387,21 +389,25 @@ function parseRecipe(text) {
   const ings = [], steps = []; let sec = null;
   const ls = text.split("\n").map(x => x.trim());
   for (const ln of ls) {
-    if (!ln || SERV_ONLY.test(ln)) continue;
-    if (ING_HEAD.test(ln)) {
+    if (!ln || SERV_ONLY.test(ln) || DECO_ONLY.test(ln)) continue;
+    if (!STEP_NUM.test(ln) && ING_HEAD.test(ln)) {
       sec = "ing";
-      const rest = ln.replace(ING_HEAD, "").replace(/^[\s】\]:：>＞》〉]+|[\s】\]:：>＞》〉]+$/g, "");
-      if (rest && QTY.test(rest) && !/人(分|前)/.test(rest) && !/^[(（]/.test(rest)) ings.push(rest);
+      const rest = ln.replace(ING_HEAD, "").replace(new RegExp("^" + DECO + "|" + DECO + "$", "gu"), "");
+      if (rest && QTY.test(rest) && !/人(分|前)/.test(rest)) ings.push(rest);
       continue;
     }
-    if (STEP_HEAD.test(ln)) { sec = "step"; continue; }
+    if (!STEP_NUM.test(ln) && STEP_HEAD.test(ln)) { sec = "step"; continue; }
     if (END_HEAD.test(ln) || /^https?:\/\//.test(ln)) { sec = null; continue; }
-    if (sec === "ing") ings.push(bullet(ln));
+    const plainNum = /^\d+[\s　]+(\S.*)$/.exec(ln);  // 「1 玉ねぎを切る」型
+    const looksStep = STEP_NUM.test(ln) ? (!QTY.test(stripNum(ln)) || ln.length > 25)
+      : !!(plainNum && /(る|す|く|む|う|た|ぐ|ぶ|つ|ぬ|て|。|！|!|完成|OK)$/.test(plainNum[1]));  // 動作で終わる文なら手順
+    if (sec === "ing" && looksStep) sec = "step";  // 見出し無しで手順が始まった
+    if (sec === "ing") { const b = bullet(ln); if (b) ings.push(b); }
     else if (sec === "step") steps.push(ln);
   }
-  if (!ings.length && !steps.length) {  // 見出しが無い投稿用
-    for (const ln of ls) {
-      if (!ln || ln.startsWith("#") || ln.startsWith("http")) continue;
+  if (!ings.length && !steps.length) {  // 見出しが無い投稿用（1行目はたいてい料理名なので除く）
+    for (const ln of ls.filter(Boolean).slice(1)) {
+      if (!ln || ln.startsWith("#") || ln.startsWith("http") || DECO_ONLY.test(ln)) continue;
       if (STEP_NUM.test(ln)) steps.push(ln);
       else if (QTY.test(ln) && ln.length <= 30 && !steps.length) ings.push(bullet(ln));
     }
