@@ -1,5 +1,5 @@
 // オフラインでも開けるようにアプリ本体をキャッシュ（通信できるときは最新版を取得）
-const CACHE = "recipe-book-v1";
+const CACHE = "recipe-book-v2";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
