@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="レシピ帳">
+<meta name="theme-color" content="#faf7f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b1917" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>レシピ保存帳</title>
+<style>
+:root{--bg:#faf7f2;--card:#fff;--ink:#2b2622;--sub:#857b72;--line:#e8e1d8;--accent:#d9622b;--accent-ink:#fff;--chip:#f1ebe3;--danger:#c0392b;--ok:#2e8b57;
+  --st:env(safe-area-inset-top);--sb:env(safe-area-inset-bottom);--tab:56px}
+@media (prefers-color-scheme:dark){:root{--bg:#1b1917;--card:#262321;--ink:#eee8e2;--sub:#a2988f;--line:#3a3532;--accent:#ee7a43;--chip:#33302d;--danger:#ff6b5b}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;-webkit-text-size-adjust:100%}
+body{padding-bottom:calc(var(--tab) + var(--sb) + 16px)}
+input,textarea,select{font:inherit;font-size:16px;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;-webkit-appearance:none;appearance:none}
+textarea{resize:vertical}
+button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 14px;cursor:pointer;white-space:nowrap;min-height:44px;touch-action:manipulation}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button.ghost{border:none;background:none;color:var(--accent);padding:8px}
+button.danger{color:var(--danger)}
+button:disabled{opacity:.55}
+a{color:var(--accent)}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:var(--st);border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:8px;padding:10px 0 8px}
+h1{font-size:22px;margin:0;flex:1}
+.aiBadge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--chip);color:var(--sub);border:none;min-height:0}
+.aiBadge.on{background:var(--ok);color:#fff}
+.searchRow{display:flex;gap:8px;padding-bottom:8px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{background:var(--chip);border:none;border-radius:99px;padding:4px 12px;font-size:14px;min-height:32px;flex:none}
+.chip.on{background:var(--accent);color:var(--accent-ink)}
+main{padding-top:14px}
+section[hidden]{display:none}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.card:active{transform:scale(.98)}
+.thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:42px}
+.card .b{padding:8px 10px 10px}
+.card h3{font-size:14px;margin:0 0 2px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{color:var(--sub);font-size:12px}
+.badge{display:inline-block;font-size:10px;padding:0 6px;border-radius:4px;color:#fff;margin-right:4px;vertical-align:1px}
+.badge.youtube{background:#e02a2a}.badge.instagram{background:#b23a9b}.badge.tiktok{background:#111}.badge.other{background:#777}
+.empty{text-align:center;color:var(--sub);padding:50px 10px}
+nav.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--card);border-top:1px solid var(--line);padding-bottom:var(--sb);display:grid;grid-template-columns:repeat(5,1fr);height:calc(var(--tab) + var(--sb))}
+nav.tabbar button{border:none;background:none;border-radius:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:var(--sub);padding:4px 0;min-height:var(--tab)}
+nav.tabbar button .i{font-size:22px;line-height:1.1;filter:grayscale(1);opacity:.7}
+nav.tabbar button.on{color:var(--accent);font-weight:600}
+nav.tabbar button.on .i{filter:none;opacity:1}
+nav.tabbar .add .i{background:var(--accent);color:#fff;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;filter:none;opacity:1;margin-top:-16px;box-shadow:0 4px 12px rgba(217,98,43,.4)}
+dialog{border:none;padding:0;background:var(--card);color:var(--ink);width:100%;max-width:640px;max-height:100%;height:100%;margin:0 auto;border-radius:0}
+@media (min-width:700px){dialog{height:auto;max-height:calc(100vh - 40px);margin:20px auto;border-radius:16px}}
+dialog[open]{animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.sheetHead{position:sticky;top:0;z-index:2;background:var(--card);display:flex;align-items:center;gap:8px;padding:calc(var(--st) + 6px) 8px 6px;border-bottom:1px solid var(--line)}
+.sheetHead h2{flex:1;margin:0;font-size:17px;text-align:center}
+.sheetHead > *:first-child,.sheetHead > *:last-child{min-width:76px}
+.sheetBody{padding:16px 16px calc(24px + var(--sb))}
+label{display:block;font-size:13px;color:var(--sub);margin:12px 0 4px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.note{background:var(--chip);border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:6px}
+.note.warn{border-left:4px solid var(--accent)}
+.embed{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#000}
+.embed.yt{aspect-ratio:16/9}.embed.ig{height:540px;background:var(--chip)}
+.embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.photo{width:100%;border-radius:12px;display:block}
+.check{padding:0;margin:0}
+.check li{list-style:none;border-bottom:1px solid var(--line)}
+.check label{display:flex;align-items:center;gap:12px;margin:0;color:inherit;font-size:16px;padding:10px 2px;min-height:44px}
+.check input{width:22px;height:22px;flex:none;-webkit-appearance:checkbox;appearance:auto;accent-color:var(--accent)}
+.check .done{text-decoration:line-through;color:var(--sub)}
+ol.steps{padding-left:22px}
+ol.steps li{margin-bottom:10px}
+h3.sec{font-size:16px;margin:20px 0 6px}
+.pre{white-space:pre-wrap}
+.facts{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 4px}
+.fact{background:var(--chip);border-radius:8px;padding:3px 10px;font-size:13px}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:20px}
+.bigBtn{width:100%;padding:14px;font-size:17px;margin-top:12px}
+details summary{cursor:pointer;color:var(--accent);font-size:14px;padding:8px 0}
+.day{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.day.today{border-color:var(--accent)}
+.day h4{margin:0 0 6px;font-size:14px;color:var(--sub)}
+.dish{display:flex;align-items:center;gap:10px;padding:4px 0}
+.dish .thumb{width:44px;height:44px;border-radius:8px;font-size:20px;flex:none}
+.dish span{flex:1;font-size:15px}
+.dish button{min-height:36px;padding:4px 10px;border:none;color:var(--sub);background:none}
+.day select{font-size:15px;padding:8px;margin-top:4px;color:var(--sub)}
+.headRow{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.headRow h2{flex:1;margin:0;font-size:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.panel h2{font-size:17px;margin:0 0 8px}
+.panel ol{padding-left:20px;margin:6px 0}
+.panel li{margin-bottom:8px}
+.code{background:var(--chip);border-radius:6px;padding:2px 6px;font-size:14px;word-break:break-all;font-family:ui-monospace,Menlo,monospace}
+.okText{color:var(--ok);font-weight:600}
+#loading{background:transparent;height:auto;width:auto;max-width:none;margin:auto;animation:none}
+#loading::backdrop{background:rgba(0,0,0,.5)}
+#loading .box{background:var(--card);border-radius:16px;padding:24px;text-align:center;width:min(300px,80vw);white-space:pre-line}
+.spin{width:36px;height:36px;border:4px solid var(--chip);border-top-color:var(--accent);border-radius:50%;margin:0 auto 12px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#cook{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;flex-direction:column;padding:calc(var(--st) + 12px) 16px calc(var(--sb) + 16px)}
+#cook.show{display:flex}
+#cook .bar{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#cook .stepNo{color:var(--accent);font-weight:700;font-size:18px}
+#cook .stepText{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(24px,7vw,40px);line-height:1.6;padding:16px 4px;overflow:auto}
+#cook .nav{display:grid;grid-template-columns:1fr 2fr;gap:12px}
+#cook .nav button{padding:18px;font-size:18px}
+#cook .progress{height:6px;background:var(--chip);border-radius:3px;overflow:hidden;margin:12px 0}
+#cook .progress div{height:100%;background:var(--accent);transition:width .2s}
+#cookTip{font-size:12px;color:var(--sub);text-align:center;margin-bottom:8px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="hrow"><h1 id="pageTitle">レシピ</h1><button class="aiBadge" id="aiBadge">AI設定</button></div>
+  <div id="recipeFilters">
+    <div class="searchRow">
+      <input id="search" type="search" placeholder="🔍 料理名・材料で検索" enterkeyhint="search">
+      <select id="platform" style="width:auto"><option value="">全部</option><option value="youtube">YouTube</option><option value="instagram">Instagram</option><option value="tiktok">TikTok</option><option value="other">その他</option></select>
+    </div>
+    <div class="chips" id="tagChips"></div>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <section id="tab-recipes">
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" hidden>まだレシピがありません。<br><br>Instagram・YouTubeで<b>「リンクをコピー」</b>して、<br>下の <b>＋</b> →「📋 貼り付けて取り込む」で保存できます。</div>
+  </section>
+
+  <section id="tab-plan" hidden>
+    <div class="headRow">
+      <button id="prevWeek" aria-label="前の週">‹</button>
+      <h2 id="weekLabel" style="text-align:center"></h2>
+      <button id="nextWeek" aria-label="次の週">›</button>
+    </div>
+    <button class="primary bigBtn" id="autoPlan" style="margin:0 0 14px">🎲 おまかせで1週間の献立を作る</button>
+    <div id="week"></div>
+  </section>
+
+  <section id="tab-shop" hidden>
+    <div class="headRow"><h2 id="shopLabel">買い物リスト</h2><button id="copyList">コピー</button></div>
+    <p class="meta">「献立」に入れたレシピの材料をまとめています。買った物はタップでチェック。</p>
+    <ul class="check" id="shopList"></ul>
+    <button class="bigBtn" id="clearChecks">チェックをすべて外す</button>
+  </section>
+
+  <section id="tab-settings" hidden>
+    <div class="panel">
+      <h2>🤖 AI読み取り（無料・Gemini）</h2>
+      <p class="meta">GoogleのAI「Gemini」の無料APIキーを入れると、<b>YouTube動画の中身を見て</b>材料・作り方・栄養まで読み取ります。キーが無くても、説明文から自動で読み取る簡易モードで使えます。</p>
+      <ol class="meta">
+        <li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> をSafariで開き、Googleアカウントでログイン</li>
+        <li>「APIキーを作成」→ 表示されたキーをコピー</li>
+        <li>下の欄に貼り付けて「保存してテスト」</li>
+      </ol>
+      <label>APIキー</label>
+      <input id="apiKey" type="password" autocomplete="off" placeholder="AIza…">
+      <label>モデル</label>
+      <input id="apiModel" list="models" autocapitalize="off">
+      <datalist id="models"><option value="gemini-2.5-flash"><option value="gemini-2.5-flash-lite"><option value="gemini-flash-latest"></datalist>
+      <button class="primary bigBtn" id="saveKey">保存してテスト</button>
+      <p id="keyStatus" class="meta"></p>
+      <p class="meta">※ キーはこのiPhoneの中だけに保存されます。無料枠には1日の回数制限があり、送った内容はGoogleのサービス改善に使われることがあります（レシピのURL・文章のみ送信）。</p>
+    </div>
+    <div class="panel">
+      <h2>📲 ホーム画面に追加</h2>
+      <ol>
+        <li>このページをSafariで開いた状態で、画面下の共有ボタン（□↑）</li>
+        <li>「<b>ホーム画面に追加</b>」→「追加」</li>
+        <li>以後はホーム画面の「レシピ帳」から開いてください（Safariとホーム画面アプリは保存データが別になります）</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h2>📥 保存のしかた</h2>
+      <ol>
+        <li>Instagram / YouTube / TikTok で投稿の「共有」→「<b>リンクをコピー</b>」</li>
+        <li>レシピ帳を開いて、下の <b>＋</b> →「<b>📋 貼り付けて取り込む</b>」</li>
+        <li>Instagramは、キャプションも長押しでコピーして「キャプション」欄に貼ると精度が上がります</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h2>💾 バックアップ</h2>
+      <p class="meta">データはこのiPhoneの中にだけあります。機種変更やアプリ削除の前に、ファイルへ書き出してください。</p>
+      <button class="bigBtn" id="exportBtn">ファイルに書き出す</button>
+      <button class="bigBtn" id="importBtn">ファイルから読み込む</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <p class="meta" id="storageInfo"></p>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button class="on" data-tab="recipes"><span class="i">📖</span>レシピ</button>
+  <button data-tab="plan"><span class="i">🗓️</span>献立</button>
+  <button class="add" id="addTab" aria-label="レシピを追加"><span class="i">＋</span>追加</button>
+  <button data-tab="shop"><span class="i">🛒</span>買い物</button>
+  <button data-tab="settings"><span class="i">⚙️</span>設定</button>
+</nav>
+
+<dialog id="addDlg">
+  <div class="sheetHead"><button class="ghost" data-close>閉じる</button><h2>レシピを追加</h2><span></span></div>
+  <form class="sheetBody" id="fetchForm">
+    <button type="button" class="primary bigBtn" id="pasteBtn" style="margin-top:0">📋 貼り付けて取り込む</button>
+    <p class="meta" style="text-align:center">コピーしたリンクをそのまま取り込みます</p>
+    <label>またはURLを入力</label>
+    <input id="urlInput" type="text" inputmode="url" autocapitalize="off" autocomplete="off" placeholder="https://www.instagram.com/reel/…">
+    <button class="bigBtn" type="submit">このURLで取り込む</button>
+    <button type="button" class="bigBtn" id="manualBtn">URLなしで手入力する</button>
+  </form>
+</dialog>
+
+<dialog id="editDlg">
+  <form id="editForm" method="dialog">
+    <div class="sheetHead"><button type="button" class="ghost" id="cancelEdit">キャンセル</button><h2 id="editTitle">保存</h2><button class="primary" type="submit">保存</button></div>
+    <div class="sheetBody">
+      <div id="editNote"></div>
+      <label>キャプション（材料・作り方の元の文章）</label>
+      <textarea name="description" rows="5" placeholder="Instagramなどのキャプションを長押し→ペースト"></textarea>
+      <button type="button" id="parseBtn" style="width:100%;margin-top:6px">✨ この文章から材料・作り方を読み取る</button>
+      <label>料理名 *</label><input name="title" required>
+      <div class="three">
+        <div><label>何人分</label><input name="servings" placeholder="2人分"></div>
+        <div><label>時間</label><input name="cook_time" placeholder="15分"></div>
+        <div><label>費用</label><input name="cost" placeholder="約300円"></div>
+      </div>
+      <label>材料（1行に1つ）</label><textarea name="ingredients" rows="7"></textarea>
+      <label>作り方（1行に1手順）</label><textarea name="steps" rows="7"></textarea>
+      <label>タグ（スペース区切り）</label><input name="tags" placeholder="時短 鶏肉 作り置き">
+      <label>自分用メモ</label><textarea name="memo" rows="2" placeholder="砂糖は控えめでOK など"></textarea>
+      <label>写真</label>
+      <div id="photoPreview"></div>
+      <button type="button" id="photoBtn" style="width:100%">📷 写真を選ぶ（スクショでもOK）</button>
+      <input type="file" id="photoFile" accept="image/*" hidden>
+      <details><summary>その他（投稿者・URL）</summary>
+        <label>投稿者</label><input name="author">
+        <label>元URL</label><input name="url" type="url">
+      </details>
+      <input type="hidden" name="platform"><input type="hidden" name="id"><input type="hidden" name="nutrition"><input type="hidden" name="thumbnail">
+    </div>
+  </form>
+</dialog>
+
+<dialog id="viewDlg">
+  <div class="sheetHead"><button class="ghost" data-close>‹ 戻る</button><h2>レシピ</h2><button class="ghost" id="editBtn">編集</button></div>
+  <div class="sheetBody" id="viewBody"></div>
+</dialog>
+
+<dialog id="loading"><div class="box"><div class="spin"></div><div id="loadingText">取り込み中…</div></div></dialog>
+
+<div id="cook">
+  <div class="bar"><span class="stepNo" id="cookNo"></span><button id="cookClose">✕ 終了</button></div>
+  <strong id="cookTitle" style="margin-top:4px"></strong>
+  <div class="progress"><div id="cookBar"></div></div>
+  <div class="stepText" id="cookText"></div>
+  <details style="margin-bottom:8px"><summary>材料を見る</summary><div class="pre" id="cookIng" style="padding-top:6px"></div></details>
+  <div id="cookTip"></div>
+  <div class="nav"><button id="cookPrev">← 前へ</button><button class="primary" id="cookNext">次へ →</button></div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const lines = s => (s || "").split("\n").map(x => x.trim()).filter(Boolean);
+const stripNum = s => s.replace(/^\s*(\d+[.)．、:]|[①-⑳]|step\s*\d+[.:]?)\s*/i, "");
+const store = {get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+               set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }};
+const WD = "日月火水木金土";
+const FIELDS = ["url","platform","title","author","thumbnail","ingredients","steps","memo","tags","description","favorite","servings","cook_time","cost","nutrition"];
+let recipes = [], plan = {}, activeTag = "", weekOffset = 0, current = null;
+
+/* ---------- 保存（iPhone内のIndexedDB） ---------- */
+const DB = (() => {
+  let dbp;
+  const open = () => dbp ??= new Promise((ok, ng) => {
+    const r = indexedDB.open("recipe-book", 1);
+    r.onupgradeneeded = () => {
+      r.result.createObjectStore("recipes", {keyPath: "id", autoIncrement: true});
+      r.result.createObjectStore("plan", {keyPath: "day"});
+    };
+    r.onsuccess = () => ok(r.result); r.onerror = () => ng(r.error);
+  });
+  const tx = async (name, mode, fn) => {
+    const db = await open();
+    return new Promise((ok, ng) => {
+      const t = db.transaction(name, mode), s = t.objectStore(name); let out;
+      const req = fn(s); if (req) req.onsuccess = () => out = req.result;
+      t.oncomplete = () => ok(out); t.onerror = () => ng(t.error);
+    });
+  };
+  return {
+    all: name => tx(name, "readonly", s => s.getAll()),
+    put: (name, v) => tx(name, "readwrite", s => s.put(v)),
+    del: (name, k) => tx(name, "readwrite", s => s.delete(k)),
+    clear: name => tx(name, "readwrite", s => s.clear()),
+  };
+})();
+navigator.storage?.persist?.();  // iOSに勝手に消されにくくする
+
+async function load() {
+  const [rs, ps] = await Promise.all([DB.all("recipes"), DB.all("plan")]);
+  recipes = rs.sort((a, b) => (b.favorite || 0) - (a.favorite || 0) || b.id - a.id);
+  plan = Object.fromEntries(ps.map(p => [p.day, p.recipe_ids || []]));
+  render(); renderPlan();
+}
+async function saveRecipe(data) {
+  const now = new Date().toISOString().slice(0, 19);
+  const old = data.id ? recipes.find(r => r.id === data.id) : null;
+  const rec = {...(old || {created_at: now, favorite: 0}), ...data, updated_at: now};
+  if (!rec.id) delete rec.id;
+  return DB.put("recipes", rec);
+}
+
+/* ---------- 取り込み（URLの種類判定・情報取得） ---------- */
+function platformOf(url) {
+  const h = (() => { try { return new URL(url).hostname; } catch { return ""; } })();
+  if (/youtube\.com|youtu\.be/.test(h)) return "youtube";
+  if (/instagram\.com/.test(h)) return "instagram";
+  if (/tiktok\.com/.test(h)) return "tiktok";
+  return "other";
+}
+function youtubeId(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) return u.pathname.slice(1, 12);
+    const m = u.pathname.match(/\/(?:shorts|embed|live)\/([\w-]{11})/);
+    return m ? m[1] : (u.searchParams.get("v") || "");
+  } catch { return ""; }
+}
+async function getJSON(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status); return r.json(); }
+
+async function fetchInfo(url) {
+  const platform = platformOf(url);
+  const info = {platform, url};
+  if (platform === "youtube") {
+    const id = youtubeId(url);
+    if (id) { info.url = `https://www.youtube.com/watch?v=${id}`; info.thumbnail = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`; }
+    try { const o = await getJSON("https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent(info.url));
+          info.title = o.title; info.author = o.author_name; } catch {}
+  } else if (platform === "tiktok") {
+    info.url = url.split("?")[0];
+    try { const o = await getJSON("https://www.tiktok.com/oembed?url=" + encodeURIComponent(info.url));
+          if (o.title) { info.description = o.title; info.title = firstLine(o.title); }
+          info.author = o.author_name || ""; info.thumbnail = o.thumbnail_url || ""; } catch {}
+  } else if (platform === "instagram") {
+    info.url = url.split("?")[0];
+    const m = info.url.match(/instagram\.com\/([\w.]+)\/(?:p|reel|tv)\//);
+    if (m && !["p", "reel", "reels", "tv"].includes(m[1])) info.author = m[1];
+  }
+  return info;
+}
+const firstLine = t => (lines(t)[0] || "").replace(/#\S+/g, "").trim().slice(0, 60);
+
+/* ---------- 簡易読み取り（AIなし） ---------- */
+const PRE = "^[\\s【\\[■●◆▼<＜《〈◎☆★♦・]*";
+const QTY = /(\d|[０-９]|大さじ|小さじ|カップ|少々|適量|適宜|ひとつまみ|お好みで|g\b|ｇ|ml|mL|cc|個|本|枚|片|かけ|束|丁|合|切れ|房|玉|袋|缶|株)/;
+const ING_HEAD = new RegExp(PRE + "(材料|ingredients?)", "i");
+const STEP_HEAD = new RegExp(PRE + "(作り方|手順|つくり方|how to|steps?|directions?|recipe)", "i");
+const END_HEAD = new RegExp(PRE + "(ポイント|コツ|point|memo|メモ|保存|tips|チャンネル|instagram|twitter|tiktok|お仕事|お問い合わせ|楽天|amazon|#)", "i");
+const STEP_NUM = /^\s*(\d+[.)．、:]|[①-⑳]|step\s*\d+|\(\d+\)|（\d+）)/i;
+const SERV_ONLY = /^[（(【\[]?\s*\d+[〜~～-]?\d*\s*人(分|前)\s*[）)】\]]?$/;
+const bullet = s => s.replace(/^[・\-•*　 ]+/, "");
+
+function parseRecipe(text) {
+  text = text || "";
+  const tags = [...new Set([...text.matchAll(/#([^\s#]+)/g)].map(m => m[1]))].slice(0, 15);
+  const sm = text.match(/(\d+[〜~～-]?\d*)\s*人(分|前)/);
+  const ings = [], steps = []; let sec = null;
+  const ls = text.split("\n").map(x => x.trim());
+  for (const ln of ls) {
+    if (!ln || SERV_ONLY.test(ln)) continue;
+    if (ING_HEAD.test(ln)) {
+      sec = "ing";
+      const rest = ln.replace(ING_HEAD, "").replace(/^[\s】\]:：>＞》〉]+|[\s】\]:：>＞》〉]+$/g, "");
+      if (rest && QTY.test(rest) && !/人(分|前)/.test(rest) && !/^[(（]/.test(rest)) ings.push(rest);
+      continue;
+    }
+    if (STEP_HEAD.test(ln)) { sec = "step"; continue; }
+    if (END_HEAD.test(ln) || /^https?:\/\//.test(ln)) { sec = null; continue; }
+    if (sec === "ing") ings.push(bullet(ln));
+    else if (sec === "step") steps.push(ln);
+  }
+  if (!ings.length && !steps.length) {  // 見出しが無い投稿用
+    for (const ln of ls) {
+      if (!ln || ln.startsWith("#") || ln.startsWith("http")) continue;
+      if (STEP_NUM.test(ln)) steps.push(ln);
+      else if (QTY.test(ln) && ln.length <= 30 && !steps.length) ings.push(bullet(ln));
+    }
+  }
+  return {ingredients: ings.join("\n"), steps: steps.join("\n"), tags: tags.join(" "), servings: sm ? sm[0] : ""};
+}
+
+/* ---------- AI読み取り（Gemini 無料枠） ---------- */
+const AI_PROMPT = `あなたは料理レシピの整理アシスタントです。与えられた料理動画（ある場合）と、投稿のタイトル・説明文から料理レシピを抽出し、次の形のJSONだけを出力してください。
+動画や説明文に無い材料・手順は作らないでください。何人分は明示されている場合だけ入れ、無ければ空文字。
+栄養・費用・時間は一般的な目安として推定して構いません（不明なら空文字）。
+{"title":"料理名(短く)","servings":"何人分","cook_time":"調理時間(例: 15分)","ingredients":["材料名 分量"],"steps":["手順"],"tags":["ジャンルや主材料など3〜5個"],"cost":"1人前のおおよその費用(例: 約250円)","nutrition":{"kcal":0,"protein_g":0,"fat_g":0,"carbs_g":0}}`;
+const aiKey = () => store.get("geminiKey", "");
+const aiModel = () => store.get("geminiModel", "") || "gemini-2.5-flash";
+
+async function gemini(parts, withVideo) {
+  const body = {contents: [{parts}], generationConfig: {responseMimeType: "application/json", temperature: 0.2}};
+  if (withVideo) body.generationConfig.mediaResolution = "MEDIA_RESOLUTION_LOW";  // 無料枠を節約
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(aiModel())}:generateContent`,
+    {method: "POST", headers: {"Content-Type": "application/json", "x-goog-api-key": aiKey()}, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const msg = j.error?.message || "";
+    if (r.status === 429) throw new Error("AIの無料枠の上限に達しました。少し時間をおいて試してください。");
+    if (r.status === 400 && /API key/i.test(msg)) throw new Error("APIキーが正しくありません（設定タブで確認）");
+    if (r.status === 404) throw new Error(`モデル「${aiModel()}」が使えません。設定タブで別のモデルを選んでください。`);
+    throw new Error(`AIエラー(${r.status}): ${msg.slice(0, 120)}`);
+  }
+  const text = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("");
+  return JSON.parse(text.replace(/^```(json)?|```$/g, "").trim());
+}
+
+async function aiExtract({title, description, url, platform}) {
+  if (!aiKey()) return null;
+  const parts = [];
+  const video = platform === "youtube" && url;
+  if (video) parts.push({file_data: {file_uri: url}});
+  if (!video && !(description || "").trim()) return null;
+  parts.push({text: `${AI_PROMPT}\n\nタイトル: ${title || ""}\n説明文:\n${(description || "").slice(0, 6000)}`});
+  const d = await gemini(parts, video);
+  const join = v => Array.isArray(v) ? v.map(String).join("\n") : String(v || "");
+  const n = d.nutrition && typeof d.nutrition === "object" && Object.values(d.nutrition).some(Boolean) ? JSON.stringify(d.nutrition) : "";
+  return {title: d.title || "", servings: d.servings || "", cook_time: d.cook_time || "", ingredients: join(d.ingredients),
+          steps: join(d.steps), tags: (d.tags || []).map(t => String(t).replace(/^#/, "")).join(" "), cost: d.cost || "", nutrition: n};
+}
+
+/* ---------- 画面共通 ---------- */
+function loading(on, text) {  // 他のシートより手前に出すため dialog で表示
+  if (text) $("#loadingText").textContent = text;
+  const d = $("#loading"); if (on && !d.open) d.showModal(); else if (!on && d.open) d.close();
+}
+$("#loading").addEventListener("cancel", e => e.preventDefault());
+const TITLES = {recipes: "レシピ", plan: "献立", shop: "買い物リスト", settings: "設定"};
+function showTab(tab) {
+  document.querySelectorAll("nav.tabbar [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  Object.keys(TITLES).forEach(t => $("#tab-" + t).hidden = t !== tab);
+  $("#recipeFilters").hidden = tab !== "recipes";
+  $("#pageTitle").textContent = TITLES[tab];
+  if (tab === "settings") renderSettings();
+  window.scrollTo(0, 0); store.set("tab", tab);
+}
+document.querySelectorAll("nav.tabbar [data-tab]").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => b.closest("dialog").close());
+function updateAiBadge() {
+  $("#aiBadge").textContent = aiKey() ? "🤖 AI ON" : "AI設定";
+  $("#aiBadge").classList.toggle("on", !!aiKey());
+}
+$("#aiBadge").onclick = () => showTab("settings");
+const thumbHtml = (r, cls = "thumb") => r.thumbnail
+  ? `<img class="${cls}" src="${esc(r.thumbnail)}" loading="lazy" alt="" onerror="this.outerHTML='<div class=&quot;${cls}&quot;>🍳</div>'">`
+  : `<div class="${cls}">🍳</div>`;
+
+/* ---------- レシピ一覧 ---------- */
+function render() {
+  const q = $("#search").value.trim().toLowerCase(), pf = $("#platform").value;
+  const list = recipes.filter(r =>
+    (!q || [r.title, r.ingredients, r.memo, r.tags, r.author].join(" ").toLowerCase().includes(q)) &&
+    (!pf || r.platform === pf) && (activeTag !== "★" || r.favorite) &&
+    (!activeTag || activeTag === "★" || (r.tags || "").split(/\s+/).includes(activeTag)));
+  $("#grid").innerHTML = list.map(r => `
+    <div class="card" data-id="${r.id}">${thumbHtml(r)}
+      <div class="b"><h3>${r.favorite ? "★ " : ""}${esc(r.title)}</h3>
+      <div class="meta"><span class="badge ${esc(r.platform)}">${esc(r.platform)}</span>${r.cook_time ? "⏱" + esc(r.cook_time) : esc(r.author)}</div></div>
+    </div>`).join("");
+  $("#empty").hidden = recipes.length > 0;
+  const counts = {};
+  recipes.forEach(r => (r.tags || "").split(/\s+/).filter(Boolean).forEach(t => counts[t] = (counts[t] || 0) + 1));
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 20);
+  $("#tagChips").innerHTML = `<button class="chip ${activeTag === "★" ? "on" : ""}" data-tag="★">★ お気に入り</button>` +
+    top.map(([t]) => `<button class="chip ${t === activeTag ? "on" : ""}" data-tag="${esc(t)}">#${esc(t)}</button>`).join("");
+}
+$("#grid").onclick = e => { const c = e.target.closest(".card"); if (c) openView(recipes.find(r => r.id == c.dataset.id)); };
+$("#tagChips").onclick = e => { const t = e.target.dataset.tag; if (t === undefined) return; activeTag = activeTag === t ? "" : t; render(); };
+$("#search").oninput = render;
+$("#platform").onchange = render;
+
+/* ---------- 編集 ---------- */
+function setPhoto(src) {
+  $("#editForm").elements.thumbnail.value = src || "";
+  $("#photoPreview").innerHTML = src ? `<img class="photo" src="${esc(src)}" alt="" style="margin-bottom:6px">` : "";
+}
+function openEdit(data, note = "", warn = false) {
+  const f = $("#editForm");
+  ["title","author","url","servings","cook_time","cost","ingredients","steps","tags","memo","description","platform","id","nutrition"]
+    .forEach(k => f.elements[k].value = data[k] ?? "");
+  setPhoto(data.thumbnail);
+  $("#editTitle").textContent = data.id ? "編集" : "保存";
+  $("#editNote").innerHTML = note ? `<div class="note ${warn ? "warn" : ""}">${note}</div>` : "";
+  $("#editDlg").showModal(); $("#editDlg").scrollTop = 0;
+}
+$("#cancelEdit").onclick = () => $("#editDlg").close();
+$("#photoBtn").onclick = () => $("#photoFile").click();
+$("#photoFile").onchange = async e => {  // 写真は縮小してiPhone内に保存
+  const file = e.target.files[0]; if (!file) return;
+  const img = await createImageBitmap(file);
+  const s = Math.min(1, 720 / Math.max(img.width, img.height));
+  const c = document.createElement("canvas"); c.width = img.width * s; c.height = img.height * s;
+  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+  setPhoto(c.toDataURL("image/jpeg", 0.8)); e.target.value = "";
+};
+function fillForm(out) {
+  const f = $("#editForm").elements;
+  for (const k of ["title","servings","cook_time","cost","ingredients","steps","tags","nutrition"])
+    if (out[k] && (!f[k].value || k !== "title")) f[k].value = out[k];
+}
+$("#parseBtn").onclick = async () => {
+  const f = $("#editForm").elements;
+  if (!f.description.value.trim()) return alert("キャプションを貼り付けてください");
+  const base = {title: f.title.value, description: f.description.value, url: f.url.value, platform: "text"};
+  loading(true, aiKey() ? "AIが読み取り中…" : "読み取り中…");
+  let ai = null;
+  try { ai = await aiExtract(base); } catch (e) { alert(e.message + "\n（簡易モードで読み取ります）"); }
+  fillForm({title: firstLine(base.description), ...parseRecipe(base.description), ...(ai || {})});
+  $("#editNote").innerHTML = `<div class="note">${ai ? "🤖 AIが" : ""}読み取りました。確認して右上の「保存」を押してください。</div>`;
+  $("#editDlg").scrollTop = 0; loading(false);
+};
+$("#editForm").onsubmit = async e => {
+  e.preventDefault();
+  const fd = Object.fromEntries(new FormData(e.target));
+  const data = Object.fromEntries(FIELDS.filter(k => k in fd).map(k => [k, fd[k]]));
+  data.tags = (data.tags || "").replace(/#/g, "").trim();
+  if (fd.id) data.id = +fd.id;
+  await saveRecipe(data);
+  $("#editDlg").close(); await load(); showTab("recipes");
+};
+
+/* ---------- 詳細 ---------- */
+function embedHtml(r) {
+  if (r.platform === "youtube") {
+    const id = youtubeId(r.url || "");
+    if (id) return `<div class="embed yt"><iframe src="https://www.youtube.com/embed/${id}?playsinline=1" allowfullscreen></iframe></div>`;
+  }
+  if (r.thumbnail?.startsWith("data:")) return `<img class="photo" src="${r.thumbnail}" alt="">`;
+  if (r.platform === "instagram") {
+    const m = (r.url || "").match(/instagram\.com\/(?:[\w.]+\/)?(p|reel|tv)\/([\w-]+)/);
+    if (m) return `<div class="embed ig"><iframe src="https://www.instagram.com/${m[1]}/${m[2]}/embed/"></iframe></div>`;
+  }
+  if (r.platform === "tiktok") {
+    const m = (r.url || "").match(/video\/(\d+)/);
+    if (m) return `<div class="embed ig"><iframe src="https://www.tiktok.com/embed/v2/${m[1]}"></iframe></div>`;
+  }
+  return r.thumbnail ? `<img class="photo" src="${esc(r.thumbnail)}" alt="">` : "";
+}
+function factsHtml(r) {
+  const f = [];
+  if (r.servings) f.push(`👥 ${esc(r.servings)}`);
+  if (r.cook_time) f.push(`⏱ ${esc(r.cook_time)}`);
+  if (r.cost) f.push(`💴 ${esc(r.cost)}`);
+  try {
+    const n = JSON.parse(r.nutrition || "{}");
+    if (n.kcal) f.push(`🔥 ${esc(n.kcal)}kcal`);
+    if (n.protein_g || n.fat_g || n.carbs_g) f.push(`P${esc(n.protein_g ?? "-")} F${esc(n.fat_g ?? "-")} C${esc(n.carbs_g ?? "-")}g`);
+  } catch {}
+  return f.length ? `<div class="facts">${f.map(x => `<span class="fact">${x}</span>`).join("")}</div>
+    ${r.nutrition || r.cost ? `<div class="meta">※栄養・費用はAIによる目安</div>` : ""}` : "";
+}
+const checklist = items => `<ul class="check">${items.map(x => `<li><label><input type="checkbox">${esc(x)}</label></li>`).join("")}</ul>`;
+
+function openView(r) {
+  current = r;
+  const ing = lines(r.ingredients), st = lines(r.steps);
+  $("#viewBody").innerHTML = `
+    <h2 style="margin:0 0 4px;font-size:21px">${esc(r.title)}</h2>
+    <div class="meta" style="margin-bottom:10px"><span class="badge ${esc(r.platform)}">${esc(r.platform)}</span>${esc(r.author)}
+      ${r.url ? ` ・ <a href="${esc(r.url)}" target="_blank" rel="noopener">元の投稿を開く</a>` : ""}</div>
+    ${embedHtml(r)}
+    ${factsHtml(r)}
+    ${st.length ? `<button class="primary bigBtn" id="cookBtn">👩‍🍳 調理モードで作る</button>` : ""}
+    <h3 class="sec">材料</h3>${ing.length ? checklist(ing) : `<p class="meta">未入力（右上の「編集」から追加）</p>`}
+    <h3 class="sec">作り方</h3>${st.length ? `<ol class="steps">${st.map(x => `<li>${esc(stripNum(x))}</li>`).join("")}</ol>` : `<p class="meta">未入力</p>`}
+    ${r.memo ? `<h3 class="sec">メモ</h3><p class="pre">${esc(r.memo)}</p>` : ""}
+    ${r.tags ? `<p class="meta">${r.tags.split(/\s+/).map(t => "#" + esc(t)).join(" ")}</p>` : ""}
+    <div class="actions">
+      <button id="favToggle">${r.favorite ? "★ 解除" : "☆ お気に入り"}</button>
+      <button id="toPlan">🗓️ 今日の献立へ</button>
+      <button class="danger" id="delBtn">削除</button>
+    </div>`;
+  if (st.length) $("#cookBtn").onclick = () => startCook(r);
+  $("#favToggle").onclick = async () => { await saveRecipe({id: r.id, favorite: r.favorite ? 0 : 1}); await load(); openView(recipes.find(x => x.id === r.id)); };
+  $("#toPlan").onclick = async () => { const d = ymd(new Date()); await savePlanDay(d, [...new Set([...(plan[d] || []), r.id])]); $("#toPlan").textContent = "追加しました ✓"; };
+  $("#delBtn").onclick = async () => {
+    if (!confirm(`「${r.title}」を削除しますか？`)) return;
+    await DB.del("recipes", r.id); $("#viewDlg").close(); load();
+  };
+  if (!$("#viewDlg").open) $("#viewDlg").showModal();
+  $("#viewDlg").scrollTop = 0;
+}
+$("#editBtn").onclick = () => { $("#viewDlg").close(); openEdit(current); };
+$("#viewBody").addEventListener("change", e => e.target.closest("label")?.classList.toggle("done", e.target.checked));
+
+/* ---------- 調理モード ---------- */
+let cookSteps = [], cookIdx = 0, wakeLock = null;
+async function startCook(r) {
+  $("#viewDlg").close();  // シートを閉じないと調理モードが裏に隠れる
+  cookSteps = lines(r.steps).map(stripNum); cookIdx = 0;
+  $("#cookTitle").textContent = r.title;
+  $("#cookIng").textContent = lines(r.ingredients).join("\n");
+  $("#cook").classList.add("show"); showStep();
+  $("#cookTip").textContent = "← → スワイプでも進めます ・ 画面は自動で消えません";
+  try { wakeLock = await navigator.wakeLock.request("screen"); }
+  catch { $("#cookTip").textContent = "スワイプで進めます。画面が暗くなる場合は 設定→画面表示と明るさ→自動ロック を一時的に「なし」に"; }
+}
+function showStep() {
+  $("#cookNo").textContent = `STEP ${cookIdx + 1} / ${cookSteps.length}`;
+  $("#cookText").textContent = cookSteps[cookIdx];
+  $("#cookBar").style.width = ((cookIdx + 1) / cookSteps.length * 100) + "%";
+  $("#cookPrev").disabled = cookIdx === 0;
+  $("#cookNext").textContent = cookIdx === cookSteps.length - 1 ? "完成！🎉" : "次へ →";
+}
+function endCook() { $("#cook").classList.remove("show"); wakeLock?.release?.(); wakeLock = null; if (current) openView(current); }
+$("#cookPrev").onclick = () => { if (cookIdx > 0) { cookIdx--; showStep(); } };
+$("#cookNext").onclick = () => { if (cookIdx < cookSteps.length - 1) { cookIdx++; showStep(); } else endCook(); };
+$("#cookClose").onclick = endCook;
+let tx = null;
+$("#cook").addEventListener("touchstart", e => tx = e.touches[0].clientX, {passive: true});
+$("#cook").addEventListener("touchend", e => {
+  if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; tx = null;
+  if (dx < -50) $("#cookNext").click(); else if (dx > 50) $("#cookPrev").click();
+});
+document.addEventListener("visibilitychange", async () => {  // 戻ってきたら画面ロック防止をかけ直す
+  if (!document.hidden && $("#cook").classList.contains("show")) { try { wakeLock = await navigator.wakeLock.request("screen"); } catch {} }
+});
+
+/* ---------- 献立・買い物リスト ---------- */
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+function weekDays() {
+  const s = new Date(); s.setHours(0, 0, 0, 0); s.setDate(s.getDate() + weekOffset * 7);
+  return [...Array(7)].map((_, i) => { const d = new Date(s); d.setDate(s.getDate() + i); return d; });
+}
+const byId = id => recipes.find(r => r.id === id);
+const md = d => `${d.getMonth() + 1}/${d.getDate()}`;
+
+function renderPlan() {
+  const days = weekDays(), today = ymd(new Date());
+  $("#weekLabel").textContent = `${md(days[0])} 〜 ${md(days[6])}`;
+  const opts = recipes.map(r => `<option value="${r.id}">${esc(r.title)}</option>`).join("");
+  $("#week").innerHTML = days.map(d => {
+    const key = ymd(d), ids = (plan[key] || []).filter(byId);
+    return `<div class="day ${key === today ? "today" : ""}"><h4>${md(d)}（${WD[d.getDay()]}）${key === today ? " ・ 今日" : ""}</h4>
+      ${ids.map(id => { const r = byId(id); return `<div class="dish">${thumbHtml(r)}<span data-open="${id}">${esc(r.title)}</span><button data-rm="${key}|${id}" aria-label="外す">✕</button></div>`; }).join("")}
+      <select data-add="${key}"><option value="">＋ レシピを追加</option>${opts}</select></div>`;
+  }).join("");
+  renderShop(days);
+}
+function renderShop(days) {
+  const items = new Map();
+  days.forEach(d => (plan[ymd(d)] || []).filter(byId).forEach(id => {
+    const r = byId(id);
+    lines(r.ingredients).forEach(line => {
+      const name = line.replace(/[\s　…・:：].*$/, "").replace(/[（(].*$/, "") || line;
+      if (!items.has(name)) items.set(name, new Map());
+      const key = `${line}（${r.title}）`, m = items.get(name);
+      m.set(key, (m.get(key) || 0) + 1);
+    });
+  }));
+  for (const [name, m] of items) items.set(name, [...m].map(([k, n]) => n > 1 ? `${k} ×${n}回` : k));
+  const checked = store.get("shopChecked", {});
+  $("#shopLabel").textContent = `買い物リスト（${md(days[0])}〜）`;
+  $("#shopList").innerHTML = items.size
+    ? [...items.entries()].map(([name, src]) => `<li><label class="${checked[name] ? "done" : ""}"><input type="checkbox" data-name="${esc(name)}" ${checked[name] ? "checked" : ""}><span><strong>${esc(name)}</strong><br><span class="meta">${src.map(esc).join(" / ")}</span></span></label></li>`).join("")
+    : `<li class="meta" style="border:none">「献立」タブでレシピを入れると、ここに材料が並びます。</li>`;
+  $("#shopList").dataset.text = [...items.entries()].map(([n, s]) => `□ ${n}${s.length > 1 ? `（${s.length}品分）` : ""}`).join("\n");
+}
+async function savePlanDay(day, ids) { plan[day] = ids; renderPlan(); await DB.put("plan", {day, recipe_ids: ids}); }
+$("#week").onchange = e => { const day = e.target.dataset.add, id = +e.target.value; if (day && id) savePlanDay(day, [...(plan[day] || []), id]); };
+$("#week").onclick = e => {
+  if (e.target.dataset.rm) { const [day, id] = e.target.dataset.rm.split("|"); savePlanDay(day, (plan[day] || []).filter(x => x !== +id)); }
+  if (e.target.dataset.open) openView(byId(+e.target.dataset.open));
+};
+$("#autoPlan").onclick = async () => {  // お気に入りを優先して、なるべく重複しないように1日1品
+  if (!recipes.length) return alert("先にレシピを保存してください");
+  const keys = weekDays().map(ymd);
+  if (keys.some(k => (plan[k] || []).length) && !confirm("この週の献立を作り直しますか？")) return;
+  const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
+  let picks = [...new Set(shuffle([...recipes.filter(r => r.favorite), ...recipes.filter(r => r.favorite), ...recipes]).map(r => r.id))];
+  while (picks.length < keys.length) picks = picks.concat(shuffle(picks));
+  for (let i = 0; i < keys.length; i++) await DB.put("plan", {day: keys[i], recipe_ids: [picks[i]]});
+  store.set("shopChecked", {}); load();
+};
+$("#prevWeek").onclick = () => { weekOffset--; renderPlan(); };
+$("#nextWeek").onclick = () => { weekOffset++; renderPlan(); };
+$("#shopList").onchange = e => {
+  const c = store.get("shopChecked", {}); c[e.target.dataset.name] = e.target.checked; store.set("shopChecked", c);
+  e.target.closest("label").classList.toggle("done", e.target.checked);
+};
+$("#clearChecks").onclick = () => { store.set("shopChecked", {}); renderPlan(); };
+$("#copyList").onclick = async () => {
+  try { await navigator.clipboard.writeText($("#shopList").dataset.text || ""); } catch { return alert("コピーできませんでした"); }
+  $("#copyList").textContent = "コピー済 ✓"; setTimeout(() => $("#copyList").textContent = "コピー", 1500);
+};
+
+/* ---------- 設定・バックアップ ---------- */
+async function renderSettings() {
+  $("#apiKey").value = aiKey(); $("#apiModel").value = aiModel();
+  $("#keyStatus").innerHTML = aiKey() ? `<span class="okText">✓ AI読み取りが有効です</span>` : "未設定（簡易モードで動作中）";
+  const est = await navigator.storage?.estimate?.().catch(() => null);
+  const persisted = await navigator.storage?.persisted?.().catch(() => false);
+  $("#storageInfo").textContent = `保存数: ${recipes.length}件` + (est ? ` ・ 使用量 ${(est.usage / 1048576).toFixed(1)}MB` : "") + (persisted ? " ・ 永続保存ON" : "");
+}
+$("#saveKey").onclick = async () => {
+  store.set("geminiKey", $("#apiKey").value.trim()); store.set("geminiModel", $("#apiModel").value.trim());
+  updateAiBadge();
+  if (!aiKey()) return renderSettings();
+  $("#keyStatus").textContent = "テスト中…";
+  try { await gemini([{text: '{"ok":true} とだけJSONで返してください'}]); $("#keyStatus").innerHTML = `<span class="okText">✓ 接続できました。AI読み取りが有効です</span>`; }
+  catch (e) { $("#keyStatus").textContent = "✕ " + e.message; }
+};
+$("#exportBtn").onclick = async () => {
+  const data = {app: "recipe-book", version: 1, exported_at: new Date().toISOString(), recipes: await DB.all("recipes"), plan: await DB.all("plan")};
+  const name = `レシピ帳_${ymd(new Date())}.json`;
+  const file = new File([JSON.stringify(data, null, 1)], name, {type: "application/json"});
+  if (navigator.canShare?.({files: [file]})) { try { await navigator.share({files: [file], title: name}); return; } catch (e) { if (e.name === "AbortError") return; } }
+  const a = Object.assign(document.createElement("a"), {href: URL.createObjectURL(file), download: name});
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+};
+$("#importBtn").onclick = () => $("#importFile").click();
+$("#importFile").onchange = async e => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  try {
+    const d = JSON.parse(await file.text());
+    const list = Array.isArray(d) ? d : d.recipes;  // Mac版の書き出し（配列）にも対応
+    if (!Array.isArray(list)) throw new Error();
+    const have = new Set(recipes.map(r => r.url).filter(Boolean));
+    let n = 0;
+    for (const r of list) {
+      if (r.url && have.has(r.url)) continue;
+      const rec = Object.fromEntries(FIELDS.map(k => [k, r[k] ?? (k === "favorite" ? 0 : "")]));
+      if (rec.thumbnail?.startsWith("/images/")) rec.thumbnail = "";  // Mac版の画像は引き継げない
+      rec.created_at = r.created_at || new Date().toISOString().slice(0, 19);
+      await saveRecipe(rec); n++;
+    }
+    await load(); alert(`${n}件のレシピを読み込みました（重複はスキップ）`); renderSettings();
+  } catch { alert("読み込めないファイルです"); }
+};
+
+/* ---------- 取り込み ---------- */
+async function importUrl(raw) {
+  const url = ((raw || "").match(/https?:\/\/\S+/) || [""])[0];  // 共有テキストに文章が混ざっていてもOK
+  if (!url) return alert("URLが見つかりません。Instagram・YouTubeで「リンクをコピー」してから押してください。");
+  $("#addDlg").close();
+  loading(true, "取り込み中…");
+  const dup = recipes.find(r => r.url && (r.url === url || r.url === url.split("?")[0]));
+  try {
+    const info = await fetchInfo(url);
+    Object.assign(info, parseRecipe(info.description));
+    if (!info.title) info.title = firstLine(info.description);
+    let ai = null, aiErr = "";
+    if (aiKey() && (info.platform === "youtube" || info.description)) {
+      loading(true, info.platform === "youtube" ? "🤖 AIが動画を見て\nレシピを読み取っています…\n（20秒〜1分）" : "🤖 AIが読み取り中…");
+      try { ai = await aiExtract(info); } catch (e) { aiErr = e.message; }
+      if (ai) for (const [k, v] of Object.entries(ai)) if (v) info[k] = v;
+    }
+    const notes = []; let warn = false;
+    if (dup) { notes.push(`⚠ 「${esc(dup.title)}」として保存済みです。`); warn = true; }
+    if (aiErr) { notes.push("AI読み取りに失敗: " + esc(aiErr)); warn = true; }
+    if (!info.ingredients && !info.steps) {
+      notes.push(info.platform === "instagram" || info.platform === "tiktok"
+        ? "投稿の説明文は自動で取れません。元のアプリでキャプションを<b>長押し→コピー</b>し、下の欄に<b>ペースト</b>して「読み取る」を押してください。"
+        : "材料・作り方が見つかりませんでした。キャプションを貼り付けるか、手入力してください。" + (aiKey() ? "" : "<br>（設定タブでAIを有効にすると、YouTubeは動画から読み取れます）"));
+      warn = true;
+    } else notes.push(ai ? "🤖 AIが読み取りました。確認して右上の「保存」を押してください。" : "読み取りました。確認して右上の「保存」を押してください。");
+    openEdit(info, notes.join("<br>"), warn);
+  } catch (e) { alert(e.message); }
+  loading(false);
+}
+$("#addTab").onclick = () => { $("#urlInput").value = ""; $("#addDlg").showModal(); };
+$("#pasteBtn").onclick = async () => {
+  let text = "";
+  try { text = await navigator.clipboard.readText(); } catch {}
+  if (!text) { $("#urlInput").focus(); return alert("貼り付けできませんでした。URL欄を長押しして「ペースト」してください。"); }
+  importUrl(text);
+};
+$("#fetchForm").onsubmit = e => { e.preventDefault(); importUrl($("#urlInput").value.trim()); };
+$("#manualBtn").onclick = () => { $("#addDlg").close(); openEdit({platform: "other"}); };
+
+/* ---------- 起動 ---------- */
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+updateAiBadge();
+showTab(store.get("tab", "recipes"));
+load().then(() => {
+  // ?url=... 付きで開くと自動取り込み（ショートカットアプリ用）
+  const shared = new URLSearchParams(location.search).get("url");
+  if (shared) { history.replaceState(null, "", location.pathname); showTab("recipes"); importUrl(shared); }
+});
+</script>
+</body>
+</html>
