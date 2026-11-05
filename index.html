@@ -159,12 +159,25 @@ details summary{cursor:pointer;color:var(--accent);font-size:14px;padding:8px 0}
       <h2>📲 ホーム画面に追加</h2>
       <ol>
         <li>このページをSafariで開いた状態で、画面下の共有ボタン（□↑）</li>
-        <li>「<b>ホーム画面に追加</b>」→「追加」</li>
-        <li>以後はホーム画面の「レシピ帳」から開いてください（Safariとホーム画面アプリは保存データが別になります）</li>
+        <li>「<b>ホーム画面に追加</b>」を選ぶ</li>
+        <li><b>「Webアプリとして開く」をオフ</b>にして「追加」<br><span class="meta">※ オンにすると、シェアボタンから保存したレシピと別の保存場所になってしまいます</span></li>
       </ol>
     </div>
     <div class="panel">
-      <h2>📥 保存のしかた</h2>
+      <h2>📤 Instagramのシェアボタンから保存</h2>
+      <p class="meta">最初に1回だけ、ショートカット「レシピ帳に保存」をiPhoneに追加します。</p>
+      <a href="レシピ帳に保存.shortcut"><button class="primary bigBtn" style="margin-top:0">ショートカットを追加する</button></a>
+      <p class="meta">開いたら「ショートカットを追加」を押してください。</p>
+      <h3 class="sec" style="margin-top:12px">使い方</h3>
+      <ol>
+        <li>Instagramでキャプションを<b>長押し→コピー</b>（材料・作り方も一緒に取り込めます）</li>
+        <li>投稿の<b>紙飛行機（シェア）</b>→ 下の一覧から「<b>レシピ帳に保存</b>」<br><span class="meta">見つからないときは一覧の最後の「その他」→「編集」で追加</span></li>
+        <li>レシピ帳が開いて自動で読み取るので、確認して「保存」</li>
+      </ol>
+      <p class="meta">初回だけ「クリップボードへのアクセスを許可しますか？」と出たら「許可」を選んでください。YouTubeの「共有」からも同じように使えます。</p>
+    </div>
+    <div class="panel">
+      <h2>📥 手動で保存する</h2>
       <ol>
         <li>Instagram / YouTube / TikTok で投稿の「共有」→「<b>リンクをコピー</b>」</li>
         <li>レシピ帳を開いて、下の <b>＋</b> →「<b>📋 貼り付けて取り込む</b>」</li>
@@ -209,7 +222,10 @@ details summary{cursor:pointer;color:var(--accent);font-size:14px;padding:8px 0}
       <div id="editNote"></div>
       <label>キャプション（材料・作り方の元の文章）</label>
       <textarea name="description" rows="5" placeholder="Instagramなどのキャプションを長押し→ペースト"></textarea>
-      <button type="button" id="parseBtn" style="width:100%;margin-top:6px">✨ この文章から材料・作り方を読み取る</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+        <button type="button" class="primary" id="pasteParseBtn">📋 貼り付けて読み取る</button>
+        <button type="button" id="parseBtn">✨ 読み取る</button>
+      </div>
       <label>料理名 *</label><input name="title" required>
       <div class="three">
         <div><label>何人分</label><input name="servings" placeholder="2人分"></div>
@@ -464,6 +480,13 @@ $("#parseBtn").onclick = async () => {
     : `<div class="note warn">材料・作り方の見出しが見つかりませんでした。下の欄に直接入力してください。</div>`;
   $("#editDlg").scrollTop = 0;
 };
+$("#pasteParseBtn").onclick = async () => {
+  let text = "";
+  try { text = await navigator.clipboard.readText(); } catch {}
+  if (!text.trim()) return alert("貼り付けできませんでした。キャプション欄を長押しして「ペースト」してください。");
+  $("#editForm").elements.description.value = text;
+  $("#parseBtn").click();
+};
 $("#editForm").onsubmit = async e => {
   e.preventDefault();
   const fd = Object.fromEntries(new FormData(e.target));
@@ -674,20 +697,24 @@ $("#importFile").onchange = async e => {
 };
 
 /* ---------- 取り込み ---------- */
-async function importUrl(raw) {
+async function importUrl(raw, caption = "") {
   const url = ((raw || "").match(/https?:\/\/\S+/) || [""])[0];  // 共有テキストに文章が混ざっていてもOK
+  // コピー内容がURLだけ（リンクをコピーした直後）ならキャプション扱いしない
+  if (!caption.replace(/https?:\/\/\S+/g, "").trim()) caption = "";
   if (!url) return alert("URLが見つかりません。Instagram・YouTubeで「リンクをコピー」してから押してください。");
   $("#addDlg").close();
   loading(true, "取り込み中…");
   const dup = recipes.find(r => r.url && (r.url === url || r.url === url.split("?")[0]));
   try {
     const info = await fetchInfo(url);
+    if (caption) info.description = caption;
     Object.assign(info, parseRecipe(info.description));
     if (!info.title) info.title = firstLine(info.description);
     const notes = []; let warn = false;
     if (dup) { notes.push(`⚠ 「${esc(dup.title)}」として保存済みです。`); warn = true; }
     if (!info.ingredients && !info.steps) {
-      notes.push(info.platform === "youtube"
+      notes.push(caption ? "コピーされていた文章から材料・作り方の見出しが見つかりませんでした。キャプションを確認するか、手入力してください。"
+        : info.platform === "youtube"
         ? "YouTubeの概要欄は自動で取れません。YouTubeアプリで概要欄の材料・作り方を<b>長押し→コピー</b>し、下の欄に<b>ペースト</b>して「読み取る」を押してください。"
         : "投稿の説明文は自動で取れません。元のアプリでキャプションを<b>長押し→コピー</b>し、下の欄に<b>ペースト</b>して「読み取る」を押してください。");
       warn = true;
@@ -710,11 +737,20 @@ $("#manualBtn").onclick = () => { $("#addDlg").close(); openEdit({platform: "oth
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 try { localStorage.removeItem("geminiKey"); localStorage.removeItem("geminiModel"); } catch {}  // 旧版で保存したAPIキーを消す
 showTab(store.get("tab", "recipes"));
-load().then(() => {
-  // ?url=... 付きで開くと自動取り込み（ショートカットアプリ用）
-  const shared = new URLSearchParams(location.search).get("url");
-  if (shared) { history.replaceState(null, "", location.pathname); showTab("recipes"); importUrl(shared); }
-});
+// ショートカット「レシピ帳に保存」から #url=...&text=... 付きで開かれたら自動で取り込む
+// （# 以降はサーバーに送られないので、コピーした文章が外に出ない）
+function handleShared() {
+  const h = new URLSearchParams(location.hash.slice(1)), q = new URLSearchParams(location.search);
+  const shared = h.get("url") || q.get("url");
+  if (!shared) return;
+  const caption = h.get("text") || q.get("text") || "";
+  history.replaceState(null, "", location.pathname);
+  showTab("recipes");
+  for (const d of document.querySelectorAll("dialog[open]")) d.close();
+  importUrl(shared, caption);
+}
+window.addEventListener("hashchange", handleShared);
+load().then(handleShared);
 </script>
 </body>
 </html>
