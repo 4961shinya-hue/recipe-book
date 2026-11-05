@@ -192,6 +192,22 @@ details summary{cursor:pointer;color:var(--accent);font-size:14px;padding:8px 0}
       <p class="meta">YouTubeの「共有」からも同じように使えます。</p>
     </div>
     <div class="panel">
+      <h2>✂️ キャプションのコピー方法</h2>
+      <p class="meta">Instagramアプリはキャプションを長押ししてもコピーできないことがあります。そのときは次のどちらかで。</p>
+      <h3 class="sec" style="margin-top:8px">方法1：スクリーンショットから（おすすめ）</h3>
+      <ol>
+        <li>キャプションの「続きを読む」を押して全文を表示し、<b>スクリーンショット</b></li>
+        <li>「写真」アプリでそのスクショを開き、右下の<b>テキスト認識マーク</b>（四角の中に線）をタップ</li>
+        <li>「<b>すべてをコピー</b>」</li>
+        <li>レシピ帳に戻って「<b>📋 貼り付けて読み取る</b>」</li>
+      </ol>
+      <h3 class="sec">方法2：Safariで開く</h3>
+      <ol>
+        <li>投稿の「…」→「<b>リンクをコピー</b>」→ Safariのアドレス欄に貼り付けて開く</li>
+        <li>キャプションの文字を長押しして選択 →「<b>コピー</b>」</li>
+      </ol>
+    </div>
+    <div class="panel">
       <h2>📥 手動で保存する</h2>
       <ol>
         <li>Instagram / YouTube / TikTok で投稿の「共有」→「<b>リンクをコピー</b>」</li>
@@ -509,6 +525,8 @@ $("#pasteParseBtn").onclick = async () => {
   let text = "";
   try { text = await navigator.clipboard.readText(); } catch {}
   if (!text.trim()) return alert("貼り付けできませんでした。キャプション欄を長押しして「ペースト」してください。");
+  if (!text.replace(/https?:\/\/\S+/g, "").trim())  // リンクしかコピーされていない
+    return alert("コピーされているのはリンクだけで、キャプションがコピーされていません。\n\nInstagramアプリではキャプションをコピーできないことがあります。設定タブの「キャプションのコピー方法」を見てください。");
   $("#editForm").elements.description.value = text;
   $("#parseBtn").click();
 };
