@@ -133,8 +133,10 @@ details summary{cursor:pointer;color:var(--accent);font-size:14px;padding:8px 0}
 
 <main class="wrap">
   <section id="tab-recipes">
+    <button class="primary bigBtn" id="quickPaste" style="margin:0 0 6px">📋 コピーしたリンクから保存</button>
+    <p class="meta" style="text-align:center;margin:0 0 14px">Instagram・YouTubeで「リンクをコピー」してから押してください</p>
     <div class="grid" id="grid"></div>
-    <div class="empty" id="empty" hidden>まだレシピがありません。<br><br>Instagram・YouTubeで<b>「リンクをコピー」</b>して、<br>下の <b>＋</b> →「📋 貼り付けて取り込む」で保存できます。</div>
+    <div class="empty" id="empty" hidden>まだレシピがありません。<br><br>Instagramの紙飛行機 →<b>「リンクをコピー」</b>して、<br>上のオレンジのボタンを押すと保存できます。</div>
   </section>
 
   <section id="tab-plan" hidden>
@@ -741,6 +743,13 @@ async function importUrl(raw, caption = "") {
   loading(false);
 }
 $("#addTab").onclick = () => { $("#urlInput").value = ""; $("#addDlg").showModal(); };
+$("#quickPaste").onclick = async () => {  // 一覧の一番上のボタン：コピーしたリンクをそのまま取り込む
+  let text = "";
+  try { text = await navigator.clipboard.readText(); } catch {}
+  if (/https?:\/\//.test(text)) return importUrl(text, text);
+  if (text.trim()) return alert("コピーされているのがリンクではありません。\nInstagramの紙飛行機 →「リンクをコピー」をしてから押してください。");
+  $("#addTab").click();
+};
 $("#pasteBtn").onclick = async () => {
   let text = "";
   try { text = await navigator.clipboard.readText(); } catch {}
