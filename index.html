@@ -166,46 +166,33 @@ details summary{cursor:pointer;color:var(--accent);font-size:14px;padding:8px 0}
       </ol>
     </div>
     <div class="panel">
-      <h2>📤 Instagramのシェアボタンから保存</h2>
-      <p class="meta">最初に1回だけ、iPhoneの「ショートカット」アプリで「レシピ帳に保存」を作ります（1分ほど）。</p>
-      <h3 class="sec" style="margin-top:8px">① ショートカットを作る</h3>
+      <h2>📤 シェアボタンで保存（おすすめ）</h2>
+      <h3 class="sec" style="margin-top:4px">① 最初に1回だけ：ショートカットを入れる</h3>
       <ol>
-        <li>下のボタンで、URLの文字をコピー<br>
-          <span class="code" id="shareBase">https://4961shinya-hue.github.io/recipe-book/?url=</span><br>
-          <button id="copyShareBase" style="margin-top:6px">📋 この文字をコピー</button></li>
-        <li>「<b>ショートカット</b>」アプリ → 右上の <b>＋</b></li>
-        <li>一番上の名前をタップ →「<b>名称変更</b>」→「<b>レシピ帳に保存</b>」</li>
-        <li>名前の横の <b>v</b>（または下の ⓘ）→「<b>詳細</b>」→「<b>共有シートに表示</b>」をオン →「完了」</li>
-        <li>下の「アクションを検索」で「<b>URLを開く</b>」を探して追加</li>
-        <li>「URLを開く」の青い「URL」部分をタップ → <b>長押し→ペースト</b>（コピーした文字）</li>
-        <li>続けて、キーボードの上に出る「<b>ショートカットの入力</b>」をタップして、文字の最後に付ける<br>
-          <span class="meta">完成形：「…/recipe-book/?url=<b>［ショートカットの入力］</b>を開く」</span></li>
-        <li>右上の「完了」</li>
+        <li><b>Safariアプリ</b>で次のURLを開く（ホーム画面のレシピ帳からではなく、Safariで）<br>
+          <span class="code" id="ssUrl">https://4961shinya-hue.github.io/recipe-book/save.shortcut</span><br>
+          <button id="copySsUrl" style="margin-top:6px">📋 このURLをコピー</button></li>
+        <li>「ダウンロードしますか？」→「<b>ダウンロード</b>」→ 開いたら「<b>ショートカットを追加</b>」</li>
       </ol>
-      <h3 class="sec">② 使い方</h3>
+      <h3 class="sec">② 保存するとき</h3>
       <ol>
-        <li>Instagramでキャプションを<b>長押し→コピー</b></li>
-        <li>投稿の<b>紙飛行機</b> → 下のアイコンを右へスワイプして「<b>共有</b>」（□↑）</li>
-        <li>開いた画面を<b>下までスクロール</b>し、文字のリストの中の「<b>レシピ帳に保存</b>」をタップ<br><span class="meta">無いときは、リスト最下部の「アクションを編集…」で ＋ を押して追加</span></li>
-        <li>レシピ帳が開いたら「<b>📋 貼り付けて読み取る</b>」→「ペースト」→ 確認して「保存」</li>
+        <li>Instagramで紙飛行機 →「<b>リンクをコピー</b>」</li>
+        <li>キャプションを「続きを読む」で全部出して<b>スクリーンショット</b></li>
+        <li>左下のスクショをタップ → 共有（□↑）→ 下にスクロールして「<b>レシピ帳に保存</b>」</li>
+        <li>レシピ帳が開いて材料・作り方が入るので、確認して「保存」</li>
       </ol>
-      <p class="meta">YouTubeの「共有」からも同じように使えます。</p>
+      <p class="meta">文字の読み取りはiPhoneの中で行い、画像は外に送りません。写真アプリの「共有」からも使えます。</p>
     </div>
     <div class="panel">
-      <h2>✂️ キャプションのコピー方法</h2>
-      <p class="meta">Instagramアプリはキャプションを長押ししてもコピーできないことがあります。そのときは次のどちらかで。</p>
-      <h3 class="sec" style="margin-top:8px">方法1：スクリーンショットから（おすすめ）</h3>
+      <h2>📷 スクショから材料を読み取る</h2>
+      <p class="meta">Instagramはキャプションをコピーできないので、スクリーンショットから文字を読み取ります（iPhoneの中で処理し、画像は外に送りません）。</p>
       <ol>
-        <li>キャプションの「続きを読む」を押して全文を表示し、<b>スクリーンショット</b></li>
-        <li>「写真」アプリでそのスクショを開き、右下の<b>テキスト認識マーク</b>（四角の中に線）をタップ</li>
-        <li>「<b>すべてをコピー</b>」</li>
-        <li>レシピ帳に戻って「<b>📋 貼り付けて読み取る</b>」</li>
+        <li>Instagramでキャプションの「<b>続きを読む</b>」を押して全文を表示</li>
+        <li>その画面を<b>スクリーンショット</b>（材料が長いときは2枚に分けてもOK）</li>
+        <li>レシピ帳の保存画面で「<b>📷 スクショから読み取る</b>」→ スクショを選ぶ</li>
+        <li>読み取った内容を確認して「保存」</li>
       </ol>
-      <h3 class="sec">方法2：Safariで開く</h3>
-      <ol>
-        <li>投稿の「…」→「<b>リンクをコピー</b>」→ Safariのアドレス欄に貼り付けて開く</li>
-        <li>キャプションの文字を長押しして選択 →「<b>コピー</b>」</li>
-      </ol>
+      <p class="meta">初回だけ、読み取りの準備（約13MBの読み込み）に少し時間がかかります。</p>
     </div>
     <div class="panel">
       <h2>📥 手動で保存する</h2>
@@ -257,6 +244,8 @@ details summary{cursor:pointer;color:var(--accent);font-size:14px;padding:8px 0}
         <button type="button" class="primary" id="pasteParseBtn">📋 貼り付けて読み取る</button>
         <button type="button" id="parseBtn">✨ 読み取る</button>
       </div>
+      <button type="button" class="primary" id="ocrBtn" style="width:100%;margin-top:8px">📷 スクショから読み取る</button>
+      <input type="file" id="ocrFile" accept="image/*" multiple hidden>
       <label>料理名 *</label><input name="title" required>
       <div class="three">
         <div><label>何人分</label><input name="servings" placeholder="2人分"></div>
@@ -384,7 +373,12 @@ function fetchInfo(url) {  // 外部への問い合わせはせず、URLから�
   }
   return info;
 }
-const firstLine = t => (lines(t)[0] || "").replace(/#\S+/g, "").trim().slice(0, 60);
+const JUNK_LINE = /^(\d{1,2}:\d{2}.*|.*(いいね|コメント|フォロー|日前|時間前|分前|週間前|返信|翻訳を見る|続きを読む|もっと見る|オリジナル音源|Instagram|リール|投稿).*)$/i;
+const firstLine = t => {
+  const ls = lines(t).map(l => l.replace(/#\S+/g, "").replace(/^[A-Za-z0-9._]{3,30}\s+(?=[^\x00-\x7F])/, "").trim());  // 先頭のユーザー名は除く
+  const good = ls.find(l => l && !JUNK_LINE.test(l) && /[^\x00-\x7F]/.test(l) && !ING_HEAD.test(l) && !STEP_HEAD.test(l));
+  return (good || ls[0] || "").slice(0, 60);
+};
 
 /* ---------- 材料・作り方の読み取り（端末内で処理） ---------- */
 // 見出しの前後に付く絵文字・記号（🥚材料🥚 ▶︎作り方 ＼材料／ ーーー手順ーーー など）は無視する
@@ -520,9 +514,9 @@ $("#parseBtn").onclick = async () => {
     : `<div class="note warn">材料・作り方の見出しが見つかりませんでした。下の欄に直接入力してください。</div>`;
   $("#editDlg").scrollTop = 0;
 };
-$("#copyShareBase").onclick = async () => {
-  try { await navigator.clipboard.writeText($("#shareBase").textContent); $("#copyShareBase").textContent = "コピーしました ✓"; }
-  catch { alert("コピーできませんでした。文字を長押ししてコピーしてください。"); }
+$("#copySsUrl").onclick = async () => {
+  try { await navigator.clipboard.writeText($("#ssUrl").textContent); $("#copySsUrl").textContent = "コピーしました ✓ Safariに貼り付けて開いてください"; }
+  catch { alert("コピーできませんでした。URLを長押ししてコピーしてください。"); }
 };
 $("#pasteParseBtn").onclick = async () => {
   let text = "";
@@ -532,6 +526,67 @@ $("#pasteParseBtn").onclick = async () => {
     return alert("コピーされているのはリンクだけで、キャプションがコピーされていません。\n\nInstagramアプリではキャプションをコピーできないことがあります。設定タブの「キャプションのコピー方法」を見てください。");
   $("#editForm").elements.description.value = text;
   $("#parseBtn").click();
+};
+/* ---------- スクショから文字を読み取る（端末内OCR・外部送信なし） ---------- */
+let ocrWorker = null;
+const loadScript = src => new Promise((ok, ng) => {
+  const el = document.createElement("script"); el.src = src; el.onload = ok; el.onerror = ng; document.head.appendChild(el);
+});
+async function getOcr() {
+  if (ocrWorker) return ocrWorker;
+  if (!window.Tesseract) await loadScript("ocr/tesseract.min.js");
+  const base = new URL("ocr/", location.href).href;  // 文字認識の部品はすべてこのサイト内に置いてある
+  ocrWorker = await Tesseract.createWorker("jpn", 1, {
+    workerPath: base + "worker.min.js", corePath: base, langPath: base.replace(/\/$/, ""), gzip: true,
+    logger: m => { if (m.status === "recognizing text") $("#loadingText").textContent = `文字を読み取っています… ${Math.round(m.progress * 100)}%`; },
+  });
+  return ocrWorker;
+}
+async function prepImage(file) {  // 縮小・白黒化。ダークモードのスクショは白黒反転して読みやすくする
+  const img = await createImageBitmap(file);
+  const sc = Math.min(1, 1500 / img.width);
+  const c = document.createElement("canvas"); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+  const ctx = c.getContext("2d"); ctx.drawImage(img, 0, 0, c.width, c.height);
+  const d = ctx.getImageData(0, 0, c.width, c.height), px = d.data;
+  let sum = 0;
+  for (let i = 0; i < px.length; i += 4) { const g = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]; px[i] = px[i + 1] = px[i + 2] = g; sum += g; }
+  if (sum / (px.length / 4) < 110) for (let i = 0; i < px.length; i += 4) px[i] = px[i + 1] = px[i + 2] = 255 - px[i];
+  ctx.putImageData(d, 0, 0);
+  return c;
+}
+const NON_ASCII = "[^\\x00-\\x7F]";
+function cleanOcr(text) {  // 日本語の間に入る余計なスペースと、絵文字が化けた1文字を取り除く
+  const collapse = l => l
+    .replace(new RegExp("(" + NON_ASCII + ") +(?=" + NON_ASCII + ")", "g"), "$1")
+    .replace(new RegExp("(" + NON_ASCII + ") +(?=[\\x21-\\x7E])", "g"), "$1")
+    .replace(new RegExp("([\\x21-\\x7E]) +(?=" + NON_ASCII + ")", "g"), "$1").trim();
+  return text.split("\n").map(raw => {
+    const m = new RegExp("^(" + NON_ASCII + ") +(.+)$", "u").exec(raw.trim());
+    if (m) {
+      const rest = collapse(m[2]);
+      if (ING_HEAD.test(rest) || STEP_HEAD.test(rest) || (rest.length >= 6 && /(る|す|く|む|う|た|ぐ|ぶ|つ|ぬ|て|。|！|!|完成)$/.test(rest))) return rest;
+    }
+    return collapse(raw);
+  }).join("\n").replace(/\n{3,}/g, "\n\n");
+}
+$("#ocrBtn").onclick = () => $("#ocrFile").click();
+$("#ocrFile").onchange = async e => {
+  const files = [...e.target.files]; e.target.value = "";
+  if (!files.length) return;
+  loading(true, "読み取りの準備中…\n（初回は少し時間がかかります）");
+  try {
+    const w = await getOcr(), texts = [];
+    for (const f of files) texts.push((await w.recognize(await prepImage(f))).data.text);
+    const text = cleanOcr(texts.join("\n"));
+    if (!text.trim()) throw new Error("文字が見つかりませんでした");
+    const f = $("#editForm").elements;
+    f.description.value = f.description.value.trim() ? f.description.value.trim() + "\n" + text : text;
+    loading(false);
+    $("#parseBtn").click();
+  } catch (err) {
+    loading(false);
+    alert("読み取れませんでした。\n" + (err?.message || err));
+  }
 };
 $("#editForm").onsubmit = async e => {
   e.preventDefault();
@@ -762,7 +817,7 @@ async function importUrl(raw, caption = "") {
       notes.push(caption ? "コピーされていた文章から材料・作り方の見出しが見つかりませんでした。キャプションを確認するか、手入力してください。"
         : info.platform === "youtube"
         ? "YouTubeの概要欄は自動で取れません。YouTubeアプリで概要欄の材料・作り方を<b>長押し→コピー</b>し、下の欄に<b>ペースト</b>して「読み取る」を押してください。"
-        : "元のアプリでキャプションを<b>長押し→コピー</b>して、下の「<b>📋 貼り付けて読み取る</b>」を押してください。");
+        : "Instagramでキャプションを「続きを読む」で全部出して<b>スクリーンショット</b>し、下の「<b>📷 スクショから読み取る</b>」を押してください。");
       warn = true;
     } else notes.push("読み取りました。確認して右上の「保存」を押してください。");
     openEdit(info, notes.join("<br>"), warn);
@@ -794,13 +849,18 @@ showTab(store.get("tab", "recipes"));
 // （# 以降はサーバーに送られないので、コピーした文章が外に出ない）
 function handleShared() {
   const h = new URLSearchParams(location.hash.slice(1)), q = new URLSearchParams(location.search);
-  const shared = h.get("url") || q.get("url");
-  if (!shared) return;
+  const shared = h.get("url") || q.get("url") || "";
   const caption = h.get("text") || q.get("text") || "";
+  if (!shared && !caption) return;
   history.replaceState(null, "", location.pathname);
   showTab("recipes");
   for (const d of document.querySelectorAll("dialog[open]")) d.close();
-  importUrl(shared, caption);
+  if (/https?:\/\//.test(shared)) return importUrl(shared, caption);
+  // リンクがコピーされていなかった：スクショの文字だけで保存画面を開く
+  const out = parseRecipe(caption);
+  openEdit({platform: "instagram", description: caption, title: firstLine(caption), ...out},
+    (out.ingredients || out.steps ? "スクショから読み取りました。" : "材料・作り方の見出しが見つかりませんでした。") +
+    "<br>※ 投稿のリンクは入っていません（先にInstagramで「リンクをコピー」しておくと一緒に保存されます）。", !(out.ingredients || out.steps));
 }
 window.addEventListener("hashchange", handleShared);
 load().then(handleShared);
