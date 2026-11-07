@@ -373,7 +373,7 @@ function fetchInfo(url) {  // 外部への問い合わせはせず、URLから�
   }
   return info;
 }
-const JUNK_LINE = /^(\d{1,2}:\d{2}.*|.*(いいね|コメント|フォロー|日前|時間前|分前|週間前|返信|翻訳を見る|続きを読む|もっと見る|オリジナル音源|Instagram|リール|投稿|こちら|@[\w.]+).*)$/i;
+const JUNK_LINE = /^(\d{1,2}:\d{2}.*|.*(いいね|コメント|フォロー|日前|時間前|分前|週間前|返信|翻訳を見る|続きを読む|もっと見る|オリジナル音源|Instagram|リール|投稿|こちら|ウェブで続ける|シェアしました|@[\w.]+).*)$/i;
 const firstLine = t => {
   const ls = lines(t).map(l => l.replace(/#\S+/g, "").replace(/^[A-Za-z0-9._]{3,30}\s*(?=[^\x00-\x7F])/, "").trim());  // 先頭のユーザー名は除く
   const good = ls.find(l => l && !JUNK_LINE.test(l) && !DECO_ONLY.test(l) && /[^\x00-\x7F]/.test(l) &&!ING_HEAD.test(l) && !STEP_HEAD.test(l));
