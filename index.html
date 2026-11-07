@@ -373,16 +373,16 @@ function fetchInfo(url) {  // 外部への問い合わせはせず、URLから�
   }
   return info;
 }
-const JUNK_LINE = /^(\d{1,2}:\d{2}.*|.*(いいね|コメント|フォロー|日前|時間前|分前|週間前|返信|翻訳を見る|続きを読む|もっと見る|オリジナル音源|Instagram|リール|投稿).*)$/i;
+const JUNK_LINE = /^(\d{1,2}:\d{2}.*|.*(いいね|コメント|フォロー|日前|時間前|分前|週間前|返信|翻訳を見る|続きを読む|もっと見る|オリジナル音源|Instagram|リール|投稿|こちら|@[\w.]+).*)$/i;
 const firstLine = t => {
   const ls = lines(t).map(l => l.replace(/#\S+/g, "").replace(/^[A-Za-z0-9._]{3,30}\s*(?=[^\x00-\x7F])/, "").trim());  // 先頭のユーザー名は除く
-  const good = ls.find(l => l && !JUNK_LINE.test(l) && /[^\x00-\x7F]/.test(l) && !ING_HEAD.test(l) && !STEP_HEAD.test(l));
+  const good = ls.find(l => l && !JUNK_LINE.test(l) && !DECO_ONLY.test(l) && /[^\x00-\x7F]/.test(l) &&!ING_HEAD.test(l) && !STEP_HEAD.test(l));
   return (good || ls[0] || "").slice(0, 60);
 };
 
 /* ---------- 材料・作り方の読み取り（端末内で処理） ---------- */
 // 見出しの前後に付く絵文字・記号（🥚材料🥚 ▶︎作り方 ＼材料／ ーーー手順ーーー など）は無視する
-const DECO = "[\\s\\p{P}\\p{S}\\p{Extended_Pictographic}\\uFE0E\\uFE0F\\u200D]*";
+const DECO = "[\\s\\p{P}\\p{S}\\p{No}\\p{Extended_Pictographic}\\uFE0E\\uFE0F\\u200D]*";  // \p{No}: 𐄙 などの飾り文字
 const HEAD_TAIL = "(?:(?![\\p{L}])|(?:は|も|の|リスト|一覧)[^\\n]{0,10}$)";  // 「材料はこちら👇」も可、「材料は全部…」の長文は不可
 const ING_HEAD = new RegExp("^" + DECO + "(材料|ざいりょう|用意するもの|準備するもの|用意する物|ingredients?)" + HEAD_TAIL, "iu");
 const STEP_HEAD = new RegExp("^" + DECO + "(作り方|つくり方|手順|調理方法|やり方|how\\s*to(\\s*make)?|steps?|directions?|method|recipe|レシピ)(?![\\p{N}])" + HEAD_TAIL, "iu");
@@ -845,15 +845,27 @@ $("#manualBtn").onclick = () => { $("#addDlg").close(); openEdit({platform: "oth
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 try { localStorage.removeItem("geminiKey"); localStorage.removeItem("geminiModel"); } catch {}  // 旧版で保存したAPIキーを消す
 showTab(store.get("tab", "recipes"));
-// ショートカット「レシピ帳に保存」から #url=...&text=... 付きで開かれたら自動で取り込む
+// ショートカット「レシピ帳に保存」から #url=...&text=...&meta=... 付きで開かれたら自動で取り込む
 // （# 以降はサーバーに送られないので、コピーした文章が外に出ない）
+// ショートカットが投稿ページから取り出した説明文（Instagram: og:description、YouTube: shortDescription）からキャプションを得る
+function metaCaption(meta) {
+  const yt = meta.match(/"shortDescription":"((?:[^"\\]|\\.)*)"/);
+  if (yt) try { const t = JSON.parse(`"${yt[1]}"`).trim(); if (t) return t; } catch {}
+  const og = meta.match(/og:description" content="([^"]*)"/);
+  if (!og) return "";
+  const ta = document.createElement("textarea"); ta.innerHTML = og[1];
+  const t = ta.value.trim();
+  // Instagramは「キャプション」 - 日付、いいね数 - ユーザー名（英語: 12 likes, ... : "キャプション".）の形
+  const m = t.match(/^「([\s\S]*)」 - [^\n]*$/) ||t.match(/^[\d,.KkMm]+ likes?,[^:]*:\s*"([\s\S]*)"\.?$/);
+  return (m ? m[1] : t).trim();
+}
 function handleShared() {
   const h = new URLSearchParams(location.hash.slice(1)), q = new URLSearchParams(location.search);
   // Instagramから直接シェアするとリンクが区切りなしで何回も並ぶので、1つずつ切り出す
   const URL_RE = /https?:\/\/(?:(?!https?:\/\/)\S)+/g;
   const rawUrl = h.get("url") || q.get("url") || "", rawText = h.get("text") || q.get("text") || "";
   const shared = (rawUrl.match(URL_RE) || rawText.match(URL_RE) || [rawUrl])[0];
-  const caption = rawText.replace(URL_RE, "").trim();
+  const caption = metaCaption(h.get("meta") || "") || rawText.replace(URL_RE, "").trim();
   if (!shared && !caption) return;
   history.replaceState(null, "", location.pathname);
   showTab("recipes");
