@@ -425,7 +425,10 @@ function parseRecipe(text) {
       else if (QTY.test(ln) && ln.length <= 30 && !steps.length) ings.push(bullet(ln));
     }
   }
-  return {ingredients: ings.join("\n"), steps: steps.join("\n"), tags: tags.join(" "), servings: sm ? sm[0] : ""};
+  // 同じ文章が2回入っていても（スクショ複数枚・キャプションとの重複など）同じ材料・手順は1回だけにする
+  const uniq = (arr, key) => { const seen = new Set(); return arr.filter(x => { const k = key(x); return k && !seen.has(k) && seen.add(k); }); };
+  const norm = s => s.replace(/[\s　・\p{P}\p{S}\p{Extended_Pictographic}️‍]/gu, "");
+  return {ingredients: uniq(ings, norm).join("\n"), steps: uniq(steps, norm).join("\n"), tags: tags.join(" "), servings: sm ? sm[0] : ""};
 }
 
 
