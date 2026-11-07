@@ -849,8 +849,11 @@ showTab(store.get("tab", "recipes"));
 // （# 以降はサーバーに送られないので、コピーした文章が外に出ない）
 function handleShared() {
   const h = new URLSearchParams(location.hash.slice(1)), q = new URLSearchParams(location.search);
-  const shared = h.get("url") || q.get("url") || "";
-  const caption = h.get("text") || q.get("text") || "";
+  // Instagramから直接シェアするとリンクが区切りなしで何回も並ぶので、1つずつ切り出す
+  const URL_RE = /https?:\/\/(?:(?!https?:\/\/)\S)+/g;
+  const rawUrl = h.get("url") || q.get("url") || "", rawText = h.get("text") || q.get("text") || "";
+  const shared = (rawUrl.match(URL_RE) || rawText.match(URL_RE) || [rawUrl])[0];
+  const caption = rawText.replace(URL_RE, "").trim();
   if (!shared && !caption) return;
   history.replaceState(null, "", location.pathname);
   showTab("recipes");
