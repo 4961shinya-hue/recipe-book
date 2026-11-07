@@ -801,7 +801,7 @@ $("#importFile").onchange = async e => {
 };
 
 /* ---------- 取り込み ---------- */
-async function importUrl(raw, caption = "") {
+async function importUrl(raw, caption = "", thumb = "") {
   const url = ((raw || "").match(/https?:\/\/\S+/) || [""])[0];  // 共有テキストに文章が混ざっていてもOK
   // コピー内容がURLだけ（リンクをコピーした直後）ならキャプション扱いしない
   if (!caption.replace(/https?:\/\/\S+/g, "").trim()) caption = "";
@@ -812,6 +812,7 @@ async function importUrl(raw, caption = "") {
   try {
     const info = await fetchInfo(url);
     if (caption) info.description = caption;
+    if (thumb) info.thumbnail = thumb;
     Object.assign(info, parseRecipe(info.description));
     if (!info.title) info.title = firstLine(info.description);
     const notes = []; let warn = false;
@@ -848,7 +849,7 @@ $("#manualBtn").onclick = () => { $("#addDlg").close(); openEdit({platform: "oth
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 try { localStorage.removeItem("geminiKey"); localStorage.removeItem("geminiModel"); } catch {}  // 旧版で保存したAPIキーを消す
 showTab(store.get("tab", "recipes"));
-// ショートカット「レシピ帳に保存」から #url=...&text=...&meta=... 付きで開かれたら自動で取り込む
+// ショートカット「レシピ帳に保存」から #url=...&text=...&meta=...&img=... 付きで開かれたら自動で取り込む
 // （# 以降はサーバーに送られないので、コピーした文章が外に出ない）
 // ショートカットが投稿ページから取り出した説明文（Instagram: og:description、YouTube: shortDescription）からキャプションを得る
 function metaCaption(meta) {
@@ -873,7 +874,10 @@ function handleShared() {
   history.replaceState(null, "", location.pathname);
   showTab("recipes");
   for (const d of document.querySelectorAll("dialog[open]")) d.close();
-  if (/https?:\/\//.test(shared)) return importUrl(shared, caption);
+  // ショートカットが投稿の画像をBase64で渡してくる（URLSearchParamsで + が空白になるので戻す）
+  const img = (h.get("img") || "").replace(/ /g, "+");
+  const thumb = /^[A-Za-z0-9+/=]{100,}$/.test(img) ? "data:image/jpeg;base64," + img : "";
+  if (/https?:\/\//.test(shared)) return importUrl(shared, caption, thumb);
   // リンクがコピーされていなかった：スクショの文字だけで保存画面を開く
   const out = parseRecipe(caption);
   openEdit({platform: "instagram", description: caption, title: firstLine(caption), ...out},
