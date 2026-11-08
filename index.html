@@ -828,13 +828,14 @@ async function importUrl(raw, caption = "", thumb = "") {
   } catch (e) { alert(e.message); }
   loading(false);
 }
-// Instagram・YouTubeのページはブラウザから読めないので、リンクをショートカット「レシピ帳に保存」に渡して
+// Instagram・YouTubeのページはブラウザから読めないので、リンクをショートカット「料理を保存」に渡して
+// （「ピ」などは端末によって文字の表し方が変わり名前で見つからないことがあるので、濁点・半濁点の無い名前にする）
 // キャプション・画像を取ってきてもらう（ショートカットが #url=…&meta=… 付きでこのアプリを開き直す）
 function importLink(text) {
   const url = ((text || "").match(/https?:\/\/\S+/) || [""])[0];
   if (!/instagram\.com|youtube\.com|youtu\.be/.test(url)) return importUrl(text, text);
   $("#addDlg").close();
-  location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("レシピ帳に保存") + "&input=text&text=" + encodeURIComponent(url);
+  location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("料理を保存") + "&input=text&text=" + encodeURIComponent(url);
 }
 $("#addTab").onclick = () => { $("#urlInput").value = ""; $("#addDlg").showModal(); };
 $("#quickPaste").onclick = async () => {  // 一覧の一番上のボタン：コピーしたリンクをそのまま取り込む
