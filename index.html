@@ -828,11 +828,19 @@ async function importUrl(raw, caption = "", thumb = "") {
   } catch (e) { alert(e.message); }
   loading(false);
 }
+// Instagram・YouTubeのページはブラウザから読めないので、リンクをショートカット「レシピ帳に保存」に渡して
+// キャプション・画像を取ってきてもらう（ショートカットが #url=…&meta=… 付きでこのアプリを開き直す）
+function importLink(text) {
+  const url = ((text || "").match(/https?:\/\/\S+/) || [""])[0];
+  if (!/instagram\.com|youtube\.com|youtu\.be/.test(url)) return importUrl(text, text);
+  $("#addDlg").close();
+  location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("レシピ帳に保存") + "&input=text&text=" + encodeURIComponent(url);
+}
 $("#addTab").onclick = () => { $("#urlInput").value = ""; $("#addDlg").showModal(); };
 $("#quickPaste").onclick = async () => {  // 一覧の一番上のボタン：コピーしたリンクをそのまま取り込む
   let text = "";
   try { text = await navigator.clipboard.readText(); } catch {}
-  if (/https?:\/\//.test(text)) return importUrl(text, text);
+  if (/https?:\/\//.test(text)) return importLink(text);
   if (text.trim()) return alert("コピーされているのがリンクではありません。\nInstagramの紙飛行機 →「リンクをコピー」をしてから押してください。");
   $("#addTab").click();
 };
@@ -840,9 +848,9 @@ $("#pasteBtn").onclick = async () => {
   let text = "";
   try { text = await navigator.clipboard.readText(); } catch {}
   if (!text) { $("#urlInput").focus(); return alert("貼り付けできませんでした。URL欄を長押しして「ペースト」してください。"); }
-  importUrl(text);
+  importLink(text);
 };
-$("#fetchForm").onsubmit = e => { e.preventDefault(); importUrl($("#urlInput").value.trim()); };
+$("#fetchForm").onsubmit = e => { e.preventDefault(); importLink($("#urlInput").value.trim()); };
 $("#manualBtn").onclick = () => { $("#addDlg").close(); openEdit({platform: "other"}); };
 
 /* ---------- 起動 ---------- */
