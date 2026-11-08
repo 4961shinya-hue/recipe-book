@@ -831,26 +831,18 @@ async function importUrl(raw, caption = "", thumb = "") {
 // Instagram・YouTubeのページはブラウザから読めないので、リンクをショートカット「料理を保存」に渡して
 // （「ピ」などは端末によって文字の表し方が変わり名前で見つからないことがあるので、濁点・半濁点の無い名前にする）
 // キャプション・画像を取ってきてもらう（ショートカットが #url=…&meta=… 付きでこのアプリを開き直す）
+// iPhoneのSafariは await の後だとボタン操作扱いにならずショートカットを開けないので、押した瞬間に開く
+const SHORTCUT = "shortcuts://run-shortcut?name=" + encodeURIComponent("料理を保存");
 function importLink(text) {
   const url = ((text || "").match(/https?:\/\/\S+/) || [""])[0];
   if (!/instagram\.com|youtube\.com|youtu\.be/.test(url)) return importUrl(text, text);
   $("#addDlg").close();
-  location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("料理を保存") + "&input=text&text=" + encodeURIComponent(url);
+  location.href = SHORTCUT + "&input=text&text=" + encodeURIComponent(url);
 }
 $("#addTab").onclick = () => { $("#urlInput").value = ""; $("#addDlg").showModal(); };
-$("#quickPaste").onclick = async () => {  // 一覧の一番上のボタン：コピーしたリンクをそのまま取り込む
-  let text = "";
-  try { text = await navigator.clipboard.readText(); } catch {}
-  if (/https?:\/\//.test(text)) return importLink(text);
-  if (text.trim()) return alert("コピーされているのがリンクではありません。\nInstagramの紙飛行機 →「リンクをコピー」をしてから押してください。");
-  $("#addTab").click();
-};
-$("#pasteBtn").onclick = async () => {
-  let text = "";
-  try { text = await navigator.clipboard.readText(); } catch {}
-  if (!text) { $("#urlInput").focus(); return alert("貼り付けできませんでした。URL欄を長押しして「ペースト」してください。"); }
-  importLink(text);
-};
+// コピーしたリンクはショートカット側でクリップボードから読む（アプリで読むと「ペースト」確認が出て止まる）
+$("#quickPaste").onclick = () => { location.href = SHORTCUT + "&input=clipboard"; };
+$("#pasteBtn").onclick = () => { $("#addDlg").close(); location.href = SHORTCUT + "&input=clipboard"; };
 $("#fetchForm").onsubmit = e => { e.preventDefault(); importLink($("#urlInput").value.trim()); };
 $("#manualBtn").onclick = () => { $("#addDlg").close(); openEdit({platform: "other"}); };
 
