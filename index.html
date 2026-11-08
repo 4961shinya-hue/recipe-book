@@ -880,9 +880,13 @@ function handleShared() {
   if (/https?:\/\//.test(shared)) return importUrl(shared, caption, thumb);
   // リンクがコピーされていなかった：スクショの文字だけで保存画面を開く
   const out = parseRecipe(caption);
+  // 新しいショートカットは v=2 を付けて呼ぶ。付いていなければ古い版が動いている
+  const why = !h.get("v")
+    ? "<br>⚠️ <b>ショートカットが古い版です。</b>iPhoneのSafariで https://4961shinya-hue.github.io/recipe-book/save.shortcut を開いて入れ直してください。"
+    : "<br>⚠️ <b>リンクが届きませんでした。</b>Instagramで 共有 →「リンクをコピー」を押してから、もう一度 共有 →「レシピ帳に保存」してください。";
   openEdit({platform: "instagram", description: caption, title: firstLine(caption), ...out},
-    (out.ingredients || out.steps ? "スクショから読み取りました。" : "材料・作り方の見出しが見つかりませんでした。") +
-    "<br>※ 投稿のリンクは入っていません（先にInstagramで「リンクをコピー」しておくと一緒に保存されます）。", !(out.ingredients || out.steps));
+    (out.ingredients || out.steps ? "スクショから読み取りました。" : "材料・作り方の見出しが見つかりませんでした。") + why,
+    !(out.ingredients || out.steps));
 }
 window.addEventListener("hashchange", handleShared);
 load().then(handleShared);
